@@ -80,12 +80,13 @@ typedef struct
 
 #define RCC_PLLSource_HSI_Div2           ((uint32_t)0x00000000)
 
-#if !defined (STM32F10X_LD_VL) && !defined (STM32F10X_MD_VL) && !defined (STM32F10X_HD_VL) && !defined (STM32F10X_CL)
- #define RCC_PLLSource_HSE_Div1           ((uint32_t)0x00010000)
+#if !defined (STM32F10X_LD_VL) && !defined (STM32F10X_MD_VL) && !defined (STM32F10X_HD_VL) && !defined (STM32F10X_CL) && !defined (STM32F10X_XL)
+ #define RCC_PLLSource_HSE_Div1           ((uint32_t)0x00010000) 
  #define RCC_PLLSource_HSE_Div2           ((uint32_t)0x00030000)
  #define IS_RCC_PLL_SOURCE(SOURCE) (((SOURCE) == RCC_PLLSource_HSI_Div2) || \
                                    ((SOURCE) == RCC_PLLSource_HSE_Div1) || \
                                    ((SOURCE) == RCC_PLLSource_HSE_Div2))
+  #error   "zzzzssssss  debug "
 #else
  #define RCC_PLLSource_PREDIV1            ((uint32_t)0x00010000)
  #define IS_RCC_PLL_SOURCE(SOURCE) (((SOURCE) == RCC_PLLSource_HSI_Div2) || \

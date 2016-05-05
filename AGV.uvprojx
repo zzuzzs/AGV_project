@@ -697,6 +697,16 @@
               <FileType>1</FileType>
               <FilePath>.\board\board.c</FilePath>
             </File>
+            <File>
+              <FileName>tuoluoyi.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\board\tuoluoyi.c</FilePath>
+            </File>
+            <File>
+              <FileName>tuoluoyi.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\board\tuoluoyi.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

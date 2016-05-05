@@ -262,6 +262,9 @@ static void SPI_Configuration(void)
 /*暂全部默认配置为上升沿触发中断*/
 static void EXTI_Interrupt_Configuration(void)
 {
+	
+	NVIC_InitTypeDef NVIC_InitStructure;
+	
 	EXTI_InitTypeDef EXTI_InitStruct = {0};
 	
 	EXTI_StructInit(&EXTI_InitStruct);
@@ -306,6 +309,16 @@ static void EXTI_Interrupt_Configuration(void)
 	EXTI_InitStruct.EXTI_Line = EXTI_Line15;
 	EXTI_InitStruct.EXTI_LineCmd = ENABLE;
 	EXTI_Init(&EXTI_InitStruct);
+	
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
+	
+	
+	 /* Enable the WAKEUP_BUTTON_EXTI_IRQn Interrupt */
+ // NVIC_InitStructure.NVIC_IRQChannel = WAKEUP_BUTTON_EXTI_IRQn;
+ // NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = PreemptionPriorityValue;
+  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+  NVIC_Init(&NVIC_InitStructure);
 	
 }
 

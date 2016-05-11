@@ -3,14 +3,11 @@
 
 #include "public.h"
 
-#define USART_REC_LEN  			200	//定义最大接收字节数 200
+#define CAMERA_BUF_LEN  			200	//定义最大接收字节数 200
+#define CAMERA_PAKLEN  27
 
-#define PAKLEN  27
+extern u8  CAMERA_RX_BUF[CAMERA_BUF_LEN];
+extern int Camera_rx_sta;
 
-
-
-extern camera_data_t cameradata;
-extern char tmp[PAKLEN] ;
-
-extern void camera_data_tan(char * data,u8 st,u8 len);
+camera_data_t* camera_data_tan(u8 * data,u8 st,u8 len);
 #endif  //__CAMERA_H

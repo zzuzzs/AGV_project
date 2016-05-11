@@ -114,10 +114,5 @@
 
 void boardinit(void);
 
-#ifdef  BOARD_TEST
-int board_test(void);
-#endif  //BOARD_TEST
- 
- 
-
 #endif //__BOARD_H 
+

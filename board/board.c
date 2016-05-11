@@ -250,10 +250,11 @@ static void UART_Configuration(void)
 static void SPI_Configuration(void)
 {
 	SPI_InitTypeDef SPI_InitStruct = {0};
-	
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1,ENABLE);
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_SPI2,ENABLE);
 	
 	SPI_StructInit(&SPI_InitStruct);
+	SPI_Init(SPI1,&SPI_InitStruct);	
 	SPI_Init(SPI2,&SPI_InitStruct);
 	//SPI_Cmd(SPI2,ENABLE);
 	
@@ -312,29 +313,18 @@ static void EXTI_Interrupt_Configuration(void)
 	
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
 	
-	
+	#if 0
 	 /* Enable the WAKEUP_BUTTON_EXTI_IRQn Interrupt */
  // NVIC_InitStructure.NVIC_IRQChannel = WAKEUP_BUTTON_EXTI_IRQn;
  // NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = PreemptionPriorityValue;
   NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
   NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
   NVIC_Init(&NVIC_InitStructure);
+	#endif
 	
 }
 
 
-/*使用库函数默认配置配置DAC通道2*/
-//DAC管脚未配置，待确认
-static void DAC_Config(void)
-{
-	DAC_InitTypeDef DAC_InitStruct = {0};
-	
-	RCC_APB1PeriphResetCmd(RCC_APB1Periph_DAC,ENABLE);
-	
-	DAC_StructInit(&DAC_InitStruct);
-	DAC_Init(DAC_Channel_2,&DAC_InitStruct);
-
-}
 
 
 void boardinit(void)
@@ -348,8 +338,6 @@ void boardinit(void)
 	UART_Configuration();
 	
 	SPI_Configuration();
-	
-	DAC_Config();
 	
 	EXTI_Interrupt_Configuration();
 	

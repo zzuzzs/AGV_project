@@ -1,6 +1,8 @@
 #ifndef __PUBLIC_H
 #define __PUBLIC_H
-
+#include "app_config.h" 
+#include "board_config.h"
+#include "includes.h"
 typedef unsigned char u8;
 
 
@@ -24,7 +26,7 @@ typedef struct {
 	float roll;
 	float pitch;
 	float yaw;
-}  tuoluoyi_info_t;
+} tuoluoyi_info_t;
 
 
 

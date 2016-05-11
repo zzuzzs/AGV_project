@@ -23,7 +23,8 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f10x_it.h" 
-
+#include "tuoluoyi.h" 
+#include "camera.h"
 
  
 void NMI_Handler(void)
@@ -80,3 +81,64 @@ void DebugMon_Handler(void)
 /*  available peripheral interrupt handler's name please refer to the startup */
 /*  file (startup_stm32f10x_xx.s).                                            */
 /******************************************************************************/
+#ifdef CON_TUOLUOYI_USART1
+#define USART1_RX_BUF		TUOLUOYI_RX_BUF
+#define USART1_BUF_LEN  TUOLUOYI_BUF_LEN
+#define USART1_INDEX		Tuoluoyi_rx_sta
+#endif /*CON_TUOLUOYI_USART1*/
+
+#ifdef CON_CAMERA_USART1
+#define USART1_RX_BUF		CAMERA_RX_BUF
+#define USART1_BUF_LEN  CAMERA_BUF_LEN
+#define USART1_INDEX		Camera_rx_sta
+#endif /*CON_CAMERA_USART1*/
+
+void USART1_IRQHandler(void)
+{
+	u8 res;
+	
+	if(USART1->SR&(1<<5))	
+	{	 
+		res=USART1->DR; 
+
+		USART1_RX_BUF[USART1_INDEX]=res;
+		USART1_INDEX++;
+		
+		if(USART1_INDEX >= USART1_BUF_LEN)    //Ñ­»·´æ´¢
+		{
+			USART1_INDEX = 0;
+		}
+	}
+	
+}
+
+#ifdef CON_TUOLUOYI_USART1
+#define USART2_RX_BUF		TUOLUOYI_RX_BUF
+#define USART2_BUF_LEN  TUOLUOYI_BUF_LEN
+#define USART2_INDEX		Tuoluoyi_rx_sta
+#endif /*CON_TUOLUOYI_USART1*/
+
+#ifdef CON_CAMERA_USART1
+#define USART2_RX_BUF		CAMERA_RX_BUF
+#define USART2_BUF_LEN  CAMERA_BUF_LEN
+#define USART2_INDEX		Camera_rx_sta
+#endif /*CON_CAMERA_USART1*/
+
+void USART2_IRQHandler(void)
+{
+	u8 res;
+	
+	if(USART2->SR&(1<<5))	
+	{	 
+		res=USART2->DR; 
+
+		USART2_RX_BUF[USART2_INDEX]=res;
+		USART2_INDEX++;
+		
+		if(USART2_INDEX >= USART2_BUF_LEN)    //Ñ­»·´æ´¢
+		{
+			USART2_INDEX = 0;
+		}
+	}
+	
+}

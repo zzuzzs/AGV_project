@@ -1,16 +1,13 @@
 #include "tuoluoyi.h"
 
 tuoluoyi_data_t tuoluoyidata = {0};
+u8  TUOLUOYI_RX_BUF[TUOLUOYI_BUF_LEN] = {0};
+int Tuoluoyi_rx_sta = 0;
 
-tuoluoyi_data_t tuoluoyidata_zero = {0};
+static char err = 0;
+static char zero_flag = 0;
 
-tuoluoyi_data_t tuoluoyidatatmp[20];
-tuoluoyi_info_t  tuoluoyiinfo = {0};
-
-char err = 0;
-char zero_flag = 0;
-
-static char tmp[PAKLEN] = {0};
+static char tmp[TUOLUOYI_PAKLEN] = {0};
 static char index = 0;
 static char data_no = 0;
 static char FA_flag = 0;
@@ -18,6 +15,10 @@ static char data_st_flag = 0;
 
 static int index_f = 0;
 static int index_f_flag = 0;
+
+static tuoluoyi_data_t tuoluoyidata_zero = {0};
+static tuoluoyi_data_t tuoluoyidatatmp[20];
+static tuoluoyi_info_t  tuoluoyiinfo = {0};
 
 static float chartofloat(char *data)
 {
@@ -35,7 +36,7 @@ static char data_analysis(char *data,tuoluoyi_data_t * tuoluoyidata_p)
 	//jiaoyan
 	char i;
 	char sum = 0;
-	for(i = 0; i < PAKLEN;i ++)
+	for(i = 0; i < TUOLUOYI_PAKLEN;i ++)
 	{
 		sum += data[i];
 	}
@@ -69,7 +70,6 @@ static char data_analysis(char *data,tuoluoyi_data_t * tuoluoyidata_p)
 	}
 	
 	return 0;
-	
 	 
 }
 
@@ -82,13 +82,13 @@ void Tuoluoyi_data_tan(u8 * data, u8 st, u8 len)
 	{
 		
 		i2 = i;
-		if(i >= USART_REC_LEN)
-				i2 -= USART_REC_LEN;
+		if(i >= TUOLUOYI_BUF_LEN)
+				i2 -= TUOLUOYI_BUF_LEN;
 		if(data_st_flag)
 		{
 			tmp[index] = *(data + i2);
 			index++;
-			if(index > PAKLEN - 1)
+			if(index > TUOLUOYI_PAKLEN - 1)
 			{
 				data_st_flag = 0;
 				
@@ -167,16 +167,16 @@ void Tuoluoyi_data_tan(u8 * data, u8 st, u8 len)
 void tuoluoyi_process(void)
 {
 	int len = 0;
-		len = (USART_RX_STA + USART_REC_LEN - index_f)  % USART_REC_LEN;  // USART_RX_STA : 当前存放字符的位置
-																																			// USART_REC_LEN :缓存大小(循环存放)
+		len = ( Tuoluoyi_rx_sta + TUOLUOYI_BUF_LEN - index_f)  % TUOLUOYI_BUF_LEN;  //  Tuoluoyi_rx_sta : 当前存放字符的位置
+																																			// TUOLUOYI_BUF_LEN :缓存大小(循环存放)
 																																			// index_f ：上次处理到的字符位置
-		if(len > PAKLEN + 2)
+		if(len > TUOLUOYI_PAKLEN + 2)
 		{
-			Tuoluoyi_data_tan(USART_RX_BUF, index_f, len);
+			Tuoluoyi_data_tan(TUOLUOYI_RX_BUF, index_f, len);
 			index_f += len;
-			if(index_f >= USART_REC_LEN)
+			if(index_f >= TUOLUOYI_BUF_LEN)
 			{
-				index_f -= USART_REC_LEN;
+				index_f -= TUOLUOYI_BUF_LEN;
 				index_f_flag++;
 			}
 		}

@@ -111,6 +111,11 @@ static void  data_analysis(char * data)
 	cameradata.x =  XYdata_analysis(data + 5);
 	cameradata.y =  XYdata_analysis(data + 12);
 	cameradata.O = Odata_analysis(data + 19);
+	AGV_status.X_location  = cameradata.number / 100;
+	AGV_status.Y_location  = cameradata.number % 100;
+	AGV_status.X_offset = cameradata.x * LEN_PER_PIC;
+	AGV_status.Y_offset = cameradata.y * LEN_PER_PIC;
+	AGV_status.Directon = cameradata.O;
 }
 
 

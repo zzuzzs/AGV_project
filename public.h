@@ -3,8 +3,9 @@
 #include "app_config.h" 
 #include "board_config.h"
 #include "includes.h"
-typedef unsigned char u8;
 
+
+#define  PI 3.1415926
 
 typedef struct tuoluoyi_data{
 	
@@ -29,8 +30,6 @@ typedef struct {
 } tuoluoyi_info_t;
 
 
-
-
 typedef struct  {
 		int number;
 		float x;
@@ -38,6 +37,20 @@ typedef struct  {
 		float O;
 } camera_data_t;
 
+
+typedef volatile struct {
+	u8 rotating;
+	u8 runing;
+	u8 X_location;
+	u8 X_offset;
+	u8 Y_location;
+	u8 Y_offset;
+	u16 Directon;
+} AGV_status_t;
+
+
+
+extern AGV_status_t AGV_status;
 
 #endif  /*__PUBLIC_H*/
 

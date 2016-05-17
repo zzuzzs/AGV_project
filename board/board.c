@@ -140,11 +140,19 @@ static void GPIO_Configuration(void)
 	GPIO_Init(GPIOD, &GPIO_InitStructure);
 	/*管脚REMAP*/
 	GPIO_PinRemapConfig(GPIO_Remap_TIM4,ENABLE);
+
+	/*SPI1*/
+	GPIO_InitStructure.GPIO_Pin = MLR_SCLK | MLR_DI;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+	GPIO_Init(GPIOA, &GPIO_InitStructure);
 	
-	/*SPI*/
+	
+		
+	/*SPI2*/
 	GPIO_InitStructure.GPIO_Pin = SPI2_SCK | SPI2_MOSI;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
 	GPIO_Init(GPIOB, &GPIO_InitStructure);
 	
 	GPIO_InitStructure.GPIO_Pin = SPI2_MISO | SPI2_NSS;
@@ -215,15 +223,15 @@ static void TIM_Configuration(void)
 	
 	TIM_EncoderInterfaceConfig(TIM1,TIM_EncoderMode_TI1,TIM_ICPolarity_Rising,TIM_ICPolarity_Rising);
 	TIM_SetAutoreload(TIM1,CON_TIM_CONT);
-	//TIM_Cmd(TIM1,ENABLE);
+	TIM_Cmd(TIM1,ENABLE);
 	
 	TIM_EncoderInterfaceConfig(TIM3,TIM_EncoderMode_TI1,TIM_ICPolarity_Rising,TIM_ICPolarity_Rising);
 	TIM_SetAutoreload(TIM3,CON_TIM_CONT);
-	//TIM_Cmd(TIM3,ENABLE);
+	TIM_Cmd(TIM3,ENABLE);
 	
 	TIM_EncoderInterfaceConfig(TIM4,TIM_EncoderMode_TI1,TIM_ICPolarity_Rising,TIM_ICPolarity_Rising);
 	TIM_SetAutoreload(TIM4,CON_TIM_CONT);
-	//TIM_Cmd(TIM4,ENABLE);
+	TIM_Cmd(TIM4,ENABLE);
 	
 }
 
@@ -245,23 +253,26 @@ static void UART_Configuration(void)
 	USART_Init(USART3,&USART_InitStruct);
 	USART_Init(UART4,&USART_InitStruct);
 }
-
-/*使用库默认配置*/
 static void SPI_Configuration(void)
 {
 	SPI_InitTypeDef SPI_InitStruct = {0};
+	
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1,ENABLE);
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_SPI2,ENABLE);
 	
-	SPI_StructInit(&SPI_InitStruct);
-	SPI_Init(SPI1,&SPI_InitStruct);	
-	SPI_Init(SPI2,&SPI_InitStruct);
-	//SPI_Cmd(SPI2,ENABLE);
-	
-	
+	SPI_InitStruct.SPI_Mode = SPI_Mode_Master;
+	SPI_InitStruct.SPI_Direction = SPI_Direction_1Line_Tx; 
+	SPI_InitStruct.SPI_DataSize  = SPI_DataSize_8b;
+	SPI_InitStruct.SPI_CPOL = SPI_CPOL_Low;
+	SPI_InitStruct.SPI_CPHA = SPI_CPHA_2Edge;
+	SPI_InitStruct.SPI_FirstBit = SPI_FirstBit_MSB;
+	SPI_InitStruct.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_2;
+	SPI_InitStruct.SPI_NSS =  SPI_NSS_Soft;
+	SPI_Init(SPI1,&SPI_InitStruct);
+	SPI_Cmd(SPI1,ENABLE);
+
 }
 /*暂全部默认配置为上升沿触发中断*/
-static void EXTI_Interrupt_Configuration(void)
+static void Interrupt_Configuration(void)
 {
 	
 	NVIC_InitTypeDef NVIC_InitStructure;
@@ -311,16 +322,26 @@ static void EXTI_Interrupt_Configuration(void)
 	EXTI_InitStruct.EXTI_LineCmd = ENABLE;
 	EXTI_Init(&EXTI_InitStruct);
 	
+
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
-	
-	#if 0
-	 /* Enable the WAKEUP_BUTTON_EXTI_IRQn Interrupt */
- // NVIC_InitStructure.NVIC_IRQChannel = WAKEUP_BUTTON_EXTI_IRQn;
- // NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = PreemptionPriorityValue;
+
+	NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
   NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
   NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
   NVIC_Init(&NVIC_InitStructure);
-	#endif
+	
+	NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
+  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+  NVIC_Init(&NVIC_InitStructure);
+	
+	NVIC_InitStructure.NVIC_IRQChannel = USART3_IRQn;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
+  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+  NVIC_Init(&NVIC_InitStructure);
 	
 }
 
@@ -339,7 +360,7 @@ void boardinit(void)
 	
 	SPI_Configuration();
 	
-	EXTI_Interrupt_Configuration();
+	Interrupt_Configuration();
 	
 }
 

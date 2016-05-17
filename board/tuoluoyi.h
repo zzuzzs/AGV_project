@@ -4,7 +4,6 @@
 
 #define TUOLUOYI_BUF_LEN  			200	//定义最大接收字节数 200
 #define T  0.05             //陀螺仪采样周期
-#define  PI 3.1415926
 #define TUOLUOYI_PAKLEN  33
 
 extern u8  TUOLUOYI_RX_BUF[TUOLUOYI_BUF_LEN];

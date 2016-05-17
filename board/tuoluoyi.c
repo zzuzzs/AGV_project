@@ -167,7 +167,7 @@ void Tuoluoyi_data_tan(u8 * data, u8 st, u8 len)
 void tuoluoyi_process(void)
 {
 	int len = 0;
-		len = ( Tuoluoyi_rx_sta + TUOLUOYI_BUF_LEN - index_f)  % TUOLUOYI_BUF_LEN;  //  Tuoluoyi_rx_sta : 当前存放字符的位置
+	len = ( Tuoluoyi_rx_sta + TUOLUOYI_BUF_LEN - index_f)  % TUOLUOYI_BUF_LEN;  //  Tuoluoyi_rx_sta : 当前存放字符的位置
 																																			// TUOLUOYI_BUF_LEN :缓存大小(循环存放)
 																																			// index_f ：上次处理到的字符位置
 		if(len > TUOLUOYI_PAKLEN + 2)

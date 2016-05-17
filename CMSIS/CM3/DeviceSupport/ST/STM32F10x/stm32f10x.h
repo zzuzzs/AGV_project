@@ -53,9 +53,7 @@
 #ifdef __cplusplus
  extern "C" {
 #endif 
- 
-#include "stm32f10x_conf.h"
-	 
+  
 /** @addtogroup Library_configuration_section
   * @{
   */

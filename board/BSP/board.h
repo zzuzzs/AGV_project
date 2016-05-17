@@ -3,7 +3,6 @@
 
 #include "app_config.h" 
 #include "board_config.h"
-#include "includes.h"
 
 #define SYSCLK_FREQ  72000000
 
@@ -127,6 +126,7 @@
 /**************************************************************************************/
 
 void boardinit(void);
+void BspInit(void);
 
 #endif //__BOARD_H 
 

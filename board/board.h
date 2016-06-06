@@ -123,11 +123,9 @@
 /**************************************************************************************/
 
 #define SYSCLK_FREQ  72000000
-<<<<<<< HEAD
-#define CNT_STK  SYSCLK_FREQ / 8 * ACON_SYSIRQ_TIME / 1000
-=======
+
 #define CNT_STK  (SYSCLK_FREQ / 8 * ACON_SYSIRQ_TIME / 1000)
->>>>>>> 3465d06bcf6ceb92bc8186ce9df5541e4267e596
+
 
 #define  V_REF 5   //DAC ²Î¿¼µçÑ¹
 

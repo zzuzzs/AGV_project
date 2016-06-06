@@ -17,7 +17,7 @@ void motor_speed_set(u8 WHICH_MOTOR,float Speed)
 	float Voltage = 0;
 	int cnt = 0;
 	
-	Voltage = Speed / PI / D_MOROR / CNT_PRE_MIN_PRE_V;
+	Voltage = Speed / PI / D_MOTOR / CNT_PRE_MIN_PRE_V;
 	cnt = Voltage * 0xffff / V_REF;
 	
 	switch(WHICH_MOTOR)

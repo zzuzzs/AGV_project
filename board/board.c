@@ -160,9 +160,18 @@ static void GPIO_Configuration(void)
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
 	GPIO_Init(GPIOB, &GPIO_InitStructure);
 	
-	GPIO_InitStructure.GPIO_Pin = SPI2_MISO | SPI2_NSS;
+	GPIO_InitStructure.GPIO_Pin = SPI2_MISO;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
 	GPIO_Init(GPIOB, &GPIO_InitStructure);
+	
+	 
+	GPIO_InitStructure.GPIO_Pin = SPI2_NSS;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_Init(GPIOB, &GPIO_InitStructure);
+	
+	GPIO_SetBits(GPIOB,SPI2_NSS);
+	
 	
 	
 	/*misc*/
@@ -276,6 +285,7 @@ static void SPI_Configuration(void)
 	SPI_InitTypeDef SPI_InitStruct = {0};
 	
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1,ENABLE);
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_SPI2,ENABLE);
 	
 	SPI_InitStruct.SPI_Mode = SPI_Mode_Master;
 	SPI_InitStruct.SPI_Direction = SPI_Direction_1Line_Tx; 
@@ -287,7 +297,21 @@ static void SPI_Configuration(void)
 	SPI_InitStruct.SPI_NSS =  SPI_NSS_Soft;
 	SPI_Init(SPI1,&SPI_InitStruct);
 	SPI_Cmd(SPI1,ENABLE);
+	
+	
+	SPI_InitStruct.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
+  SPI_InitStruct.SPI_Mode = SPI_Mode_Master;
+  SPI_InitStruct.SPI_DataSize = SPI_DataSize_8b;
+  SPI_InitStruct.SPI_CPOL = SPI_CPOL_Low;
+  SPI_InitStruct.SPI_CPHA = SPI_CPHA_1Edge;
+  SPI_InitStruct.SPI_NSS = SPI_NSS_Soft;
+  SPI_InitStruct.SPI_BaudRatePrescaler = SPI_BaudRatePrescaler_4;
+  SPI_InitStruct.SPI_FirstBit = SPI_FirstBit_MSB;
+  SPI_InitStruct.SPI_CRCPolynomial = 7;
+  SPI_Init(SPI2, &SPI_InitStruct);
+  SPI_Cmd(SPI2, ENABLE);
 
+	
 }
 
 static void Interrupt_Configuration(void)

@@ -186,25 +186,28 @@ void USART3_IRQHandler(void)
 
 void SysTick_Handler(void)
 {
-	u16 tmp,cnt;
+	int tmp,cnt;
 	systick++;
 	
-	if(AGV_status.V_right_test_request)
+	if(systick % 50 == 0)
 	{
-		tmp = CON_ENCODE_RIGHT->CNT;
-		cnt = (encode_right_cnt - tmp + ACON_TIM_CONT) % ACON_TIM_CONT;
-		AGV_status.V_right  = cnt * PI * D_MOTOR / CON_ENCODE_CNT / ACON_SYSIRQ_TIME * 1000;
-		AGV_status.V_right_test_request = 0;
+		//if(AGV_status.V_right_test_request)
+	//	{
+			tmp = CON_ENCODE_RIGHT->CNT;
+			cnt = (tmp - encode_right_cnt + ACON_TIM_CONT) % ACON_TIM_CONT;
+			AGV_status.V_right  = cnt * PI * D_MOTOR / CON_ENCODE_CNT / ACON_SYSIRQ_TIME * 1000;
+			AGV_status.V_right_test_request = 0;
+	//	}
+	//	if(AGV_status.V_left_test_request)
+	//	{
+			tmp = CON_ENCODE_LEFT->CNT;
+			cnt = (tmp - encode_left_cnt + ACON_TIM_CONT) % ACON_TIM_CONT;
+			AGV_status.V_left  = cnt * PI * D_MOTOR / CON_ENCODE_CNT / ACON_SYSIRQ_TIME * 1000;
+			AGV_status.V_left_test_request = 0;
+	//	}
+		encode_right_cnt = CON_ENCODE_RIGHT->CNT;
+		encode_left_cnt = CON_ENCODE_LEFT->CNT;
 	}
-	if(AGV_status.V_left_test_request)
-	{
-		tmp = CON_ENCODE_LEFT->CNT;
-		cnt = (tmp + ACON_TIM_CONT - encode_left_cnt) % ACON_TIM_CONT;
-		AGV_status.V_left  = cnt * PI * D_MOTOR / CON_ENCODE_CNT / ACON_SYSIRQ_TIME * 1000;
-		AGV_status.V_left_test_request = 0;
-	}
-	encode_right_cnt = CON_ENCODE_RIGHT->CNT;
-	encode_left_cnt = CON_ENCODE_LEFT->CNT;
 }
 
 

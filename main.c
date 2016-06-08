@@ -5,15 +5,26 @@
 #include "camera.h"
 #include "tuoluoyi.h"
 #include "motor.h"
+#include "flash.h"
 
 int main(void)
 {
 
+	u8 ResetTest,Reset_Flag = 0x55;
 	__disable_irq();
 	boardinit();
 	PID_init();
 	__enable_irq();
 	
+	sFLASH_ReadBuffer(&ResetTest,ResetTest_ADDR,1);
+	 
+	if(ResetTest!=0x55)
+    {
+			GPIO_SetBits(GPIOA,MCU_LED1);
+		  sFLASH_Reset();
+			sFLASH_WriteBuffer(&Reset_Flag,ResetTest_ADDR,1);
+	  }
+		
 	while(1)
 	{
 		camera_process();

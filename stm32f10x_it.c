@@ -166,16 +166,24 @@ void USART3_IRQHandler(void)
     USART3_RX_BUF[USART3_INDEX]=res;
 		USART3_INDEX++;
 		
+		
 		if(USART3_INDEX >= USART3_BUF_LEN)    //循环存储
 		{
+			USART3_INDEX = 0;
+		}
+		if(res == 0xff){
+			/*
 			//关闭后台任务，初始化相关变量
 			TUOLUOYI_IRQ_Set(DISABLE);
 
-			USART3_INDEX = 0;
+			
 			memset((void *)&AGV_status,0,sizeof(AGV_status));
 			memset((void*)&tuoluoyi_status,0,sizeof(tuoluoyi_status));
 			memset((void*)&camera_status,0,sizeof(camera_status));	
+			*/
+			USART3_INDEX = 0;
 			command_process();
+			
 		}
 	}
 	
@@ -186,27 +194,25 @@ void USART3_IRQHandler(void)
 
 void SysTick_Handler(void)
 {
-	int tmp,cnt;
+	int tmp = 0,cnt = 0;
 	systick++;
 	
-	if(systick % 50 == 0)
+	if(systick % ACON_PID_CONTROL_TIME == 0)
 	{
-		//if(AGV_status.V_right_test_request)
-	//	{
+		if(AGV_status.runing_status || AGV_status.rotating_status)
+		{
 			tmp = CON_ENCODE_RIGHT->CNT;
-			cnt = (tmp - encode_right_cnt + ACON_TIM_CONT) % ACON_TIM_CONT;
-			AGV_status.V_right  = cnt * PI * D_MOTOR / CON_ENCODE_CNT / ACON_SYSIRQ_TIME * 1000;
-			AGV_status.V_right_test_request = 0;
-	//	}
-	//	if(AGV_status.V_left_test_request)
-	//	{
+			cnt = (tmp + (ACON_TIM_CONT- AGV_status.encode_right_cnt)) % ACON_TIM_CONT;
+			AGV_status.V_right  = cnt * PI * (D_MOTOR / 100.0) / CON_ENCODE_CNT / ACON_PID_CONTROL_TIME * 1000;
+			AGV_status.encode_right_cnt = tmp;
+			
 			tmp = CON_ENCODE_LEFT->CNT;
-			cnt = (tmp - encode_left_cnt + ACON_TIM_CONT) % ACON_TIM_CONT;
-			AGV_status.V_left  = cnt * PI * D_MOTOR / CON_ENCODE_CNT / ACON_SYSIRQ_TIME * 1000;
-			AGV_status.V_left_test_request = 0;
-	//	}
-		encode_right_cnt = CON_ENCODE_RIGHT->CNT;
-		encode_left_cnt = CON_ENCODE_LEFT->CNT;
+			cnt = (tmp - AGV_status.encode_left_cnt + ACON_TIM_CONT) % ACON_TIM_CONT;
+			AGV_status.V_left  = cnt * PI * (D_MOTOR / 100.0) / CON_ENCODE_CNT / ACON_PID_CONTROL_TIME * 1000;
+			AGV_status.encode_left_cnt = tmp;
+		
+			AGV_control(&AGV_control_data);
+		}
 	}
 }
 
@@ -216,6 +222,7 @@ void START_BUTTON_IRQ_Handler
 	EXTI_ClearFlag(START_BUTTON_IRQ_LINE);
 	AGV_status.runbutton_status = 1;
 	AGV_status.suspendbutton_status = 0;
+	GPIO_SetBits(GPIOA,GPIO_Pin_11);
 }
 
 

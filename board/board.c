@@ -325,7 +325,7 @@ static void Interrupt_Configuration(void)
 	
 	EXTI_InitStruct.EXTI_Line = START_BUTTON_IRQ_LINE;
 	EXTI_InitStruct.EXTI_Mode = EXTI_Mode_Interrupt;
-	EXTI_InitStruct.EXTI_Trigger =  EXTI_Trigger_Rising;
+	EXTI_InitStruct.EXTI_Trigger =  EXTI_Trigger_Falling;
 	EXTI_InitStruct.EXTI_LineCmd = ENABLE;
 	EXTI_Init(&EXTI_InitStruct);
 	
@@ -392,7 +392,7 @@ static void Interrupt_Configuration(void)
   NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
   NVIC_Init(&NVIC_InitStructure);
 	
-	
+
 #if 0
 	NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;

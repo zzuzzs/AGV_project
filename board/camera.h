@@ -35,4 +35,5 @@ extern camera_status_t camera_status;
 
 /* Exported functions ------------------------------------------------------- */
 void camera_process(void);
+void Camera_DeInit(void);
 #endif  //__CAMERA_H

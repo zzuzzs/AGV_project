@@ -23,6 +23,9 @@ typedef struct {
 	float roll;
 	float pitch;
 	float yaw;
+	float Xl_pre;
+	float Yl_pre;
+	float yaw_pre;
 } tuoluoyi_info_t;
 
 

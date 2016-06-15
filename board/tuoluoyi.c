@@ -104,17 +104,17 @@ static void Tuoluoyi_data_tan(u8 * data, u8 st, u8 len)
 						int m;
 						for(m = 0; m < 20;m++) 
 						{
-							tuoluoyidata_zero.Xacc += tuoluoyidatatmp[m].Xacc;
-							tuoluoyidata_zero.Yacc += tuoluoyidatatmp[m].Yacc;
-							tuoluoyidata_zero.Zacc += tuoluoyidatatmp[m].Zacc;
+						//	tuoluoyidata_zero.Xacc += tuoluoyidatatmp[m].Xacc;
+							//tuoluoyidata_zero.Yacc += tuoluoyidatatmp[m].Yacc;
+						//	tuoluoyidata_zero.Zacc += tuoluoyidatatmp[m].Zacc;
 							tuoluoyidata_zero.PitchRate += tuoluoyidatatmp[m].PitchRate;
 							tuoluoyidata_zero.RollRate += tuoluoyidatatmp[m].RollRate;
 							tuoluoyidata_zero.YawRate += tuoluoyidatatmp[m].YawRate;
 						}
 
-						tuoluoyidata_zero.Xacc /= 20;
-						tuoluoyidata_zero.Yacc /= 20;
-						tuoluoyidata_zero.Zacc /= 20;
+					//	tuoluoyidata_zero.Xacc /= 20;
+					//	tuoluoyidata_zero.Yacc /= 20;
+				//		tuoluoyidata_zero.Zacc /= 20;
 						tuoluoyidata_zero.PitchRate /= 20;
 						tuoluoyidata_zero.RollRate /= 20;
 						tuoluoyidata_zero.YawRate /= 20;
@@ -129,20 +129,19 @@ static void Tuoluoyi_data_tan(u8 * data, u8 st, u8 len)
 					
 					flag_old = tuoluoyi_status.clear_flag;
 					
-					tuoluoyiinfo.Xv += tuoluoyidata.Xacc * T;
-					tuoluoyiinfo.Yv += tuoluoyidata.Yacc * T;
-					tuoluoyiinfo.Zv += tuoluoyidata.Zacc * T;
+				//	tuoluoyiinfo.Xv += tuoluoyidata.Xacc * T;
+				//	tuoluoyiinfo.Yv += tuoluoyidata.Yacc * T;
+				//	tuoluoyiinfo.Zv += tuoluoyidata.Zacc * T;
 					
-					tuoluoyiinfo.Xl += tuoluoyiinfo.Xv * T + 0.5 * tuoluoyidata.Xacc * T * T;
-					tuoluoyiinfo.Yl += tuoluoyiinfo.Yv * T + 0.5 * tuoluoyidata.Yacc * T * T;
-					tuoluoyiinfo.Zl += tuoluoyiinfo.Zv * T + 0.5 * tuoluoyidata.Zacc * T * T;
+					//tuoluoyiinfo.Xl += tuoluoyiinfo.Xv * T + 0.5 * tuoluoyidata.Xacc * T * T;
+				//	tuoluoyiinfo.Yl += tuoluoyiinfo.Yv * T + 0.5 * tuoluoyidata.Yacc * T * T;
+				//	tuoluoyiinfo.Zl += tuoluoyiinfo.Zv * T + 0.5 * tuoluoyidata.Zacc * T * T;
 					
 					tuoluoyiinfo.roll += tuoluoyidata.RollRate * T * 180 / PI;
 					tuoluoyiinfo.pitch += tuoluoyidata.PitchRate * T * 180 / PI;
 					tuoluoyiinfo.yaw += tuoluoyidata.YawRate * T * 180 / PI;
 					
-					if(flag_old != tuoluoyi_status.clear_flag)
-					{
+					if(flag_old != tuoluoyi_status.clear_flag){
 						memset(&tuoluoyiinfo,0,sizeof(tuoluoyiinfo));
 						__disable_irq();
 						tuoluoyi_status.clear_flag = 0;
@@ -151,11 +150,25 @@ static void Tuoluoyi_data_tan(u8 * data, u8 st, u8 len)
 					else
 					{
 						__disable_irq();
-						AGV_status.X_location += tuoluoyiinfo.Xl;
-						AGV_status.Y_location += tuoluoyiinfo.Yl;
-						AGV_status.X_offset   += tuoluoyiinfo.Xl;
-						AGV_status.Y_offset   += tuoluoyiinfo.Yl;
-						AGV_status.Directon   += tuoluoyiinfo.yaw;   //´ýÈ·ÈÏ
+			//			AGV_status.X_location += (tuoluoyiinfo.Xl  - tuoluoyiinfo.Xl_pre) * 100;
+			//		AGV_status.Y_location += (tuoluoyiinfo.Yl - tuoluoyiinfo.Yl_pre) * 100;
+			//		AGV_status.X_offset   += (tuoluoyiinfo.Xl  - tuoluoyiinfo.Xl_pre) * 100;
+			//		AGV_status.Y_offset   += (tuoluoyiinfo.Yl - tuoluoyiinfo.Yl_pre) * 100;
+						AGV_status.Directon   -= tuoluoyiinfo.yaw - tuoluoyiinfo.yaw_pre;
+						
+						if(AGV_status.Directon >= 360)
+						{
+							AGV_status.Directon -= 360;
+						}
+						if(AGV_status.Directon  < 0)
+						{
+							AGV_status.Directon += 360;
+						}
+						
+				//		tuoluoyiinfo.Xl_pre = tuoluoyiinfo.Xl;
+				//		tuoluoyiinfo.Yl_pre = tuoluoyiinfo.Yl;
+						tuoluoyiinfo.yaw_pre = tuoluoyiinfo.yaw;
+						
 						__enable_irq();
 					}
 					

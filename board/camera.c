@@ -107,25 +107,45 @@ END:
 }
 
 
-static void  data_analysis(char * data)
+static void  camera_data_analysis(char * data)
 {
 	cameradata.number = numberdata_analysis(data);
 	cameradata.x =  XYdata_analysis(data + 5);
 	cameradata.y =  XYdata_analysis(data + 12);
 	cameradata.O = Odata_analysis(data + 19);
 	
+
 	memset(&tuoluoyiinfo,0,sizeof(tuoluoyiinfo));
-	tuoluoyi_status.clear_flag = 1;
+	
+	tuoluoyi_status.clear_flag++;
 	
 	//zzs debug ´ýÍêÉÆ
-	AGV_status.X_offset = (cameradata.x - PIC_CENTRE_X) * LEN_PER_PIC;
-	AGV_status.Y_offset = (cameradata.y - PIC_CENTRE_Y) * LEN_PER_PIC;
-	AGV_status.X_location  = (cameradata.number / 100) * ACON_LEN_QR + AGV_status.X_offset;
+	
+	__disable_irq();
+	AGV_status.X_offset = (cameradata.x - PIC_CENTRE_X) * LEN_PER_PIC / 10;
+	AGV_status.Y_offset = (cameradata.y - PIC_CENTRE_Y) * LEN_PER_PIC / 10;
+	AGV_status.X_location  = (cameradata.number / 100.0) * ACON_LEN_QR + AGV_status.X_offset;
 	AGV_status.Y_location  = (cameradata.number % 100) * ACON_LEN_QR + AGV_status.Y_offset;
-	AGV_status.Directon = cameradata.O;
-	
-	
+	switch(AGV_status.runing_towards)
+	{
+		case 0:
+			AGV_status.Directon =  cameradata.O > 0 ? 180 - cameradata.O : -(cameradata.O + 180);
+			break;
+		case 90:
+			AGV_status.Directon =  90 - cameradata.O;
+		break;
+		case 180:
+			AGV_status.Directon =  - cameradata.O;
+		break;
+		case 270:
+			AGV_status.Directon =  -(90 + cameradata.O);
+		break;
+	}
+	PID_data.err_pre_1 = 0;
+	PID_data.err_now = 0;
+	__enable_irq();
 	camera_status.init_flag = 1; 
+	GPIO_SetBits(GPIOA,GPIO_Pin_12);
 }
 
 
@@ -148,7 +168,7 @@ static void camera_data_tan(u8* data, u8 st, u8 len)
 			if(CAMERA_PAKLEN  == index )
 			{
 				if(*(data + i2) == 0x61)
-					data_analysis(tmp);
+					camera_data_analysis(tmp);
 				data_st_flag = 0;
 				index = 0;
 			}
@@ -163,7 +183,7 @@ static void camera_data_tan(u8* data, u8 st, u8 len)
 		}
 		
 	}	
-//	return &cameradata;
+
 }
 
 
@@ -175,11 +195,6 @@ void camera_process(void)
 																																			
 	if(len > CAMERA_PAKLEN + 1)
 	{
-		if(!camera_status.init_flag)
-		{
-			data_st_flag = 0;
-			index =0;
-		}
 		camera_data_tan(CAMERA_RX_BUF, index_buf, len);
 		index_buf += len;
 		if(index_buf >= CAMERA_BUF_LEN)
@@ -187,5 +202,17 @@ void camera_process(void)
 			index_buf -= CAMERA_BUF_LEN;
 		}
 	}
+}
+
+void Camera_DeInit(void)
+{
+	memset(CAMERA_RX_BUF,CAMERA_BUF_LEN,0);
+	memset(tmp,CAMERA_PAKLEN,0);
+	memset(&cameradata,sizeof(cameradata),0);
+	Camera_rx_sta = 0;
+	data_st_flag = 0;
+	index = 0;
+	index_buf = 0;
+	
 }
 

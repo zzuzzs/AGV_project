@@ -2,7 +2,7 @@
 #define __MOTOR_H
 #include "public.h"
 
-#define CNT_PRE_MIN_PRE_V 625  //外部调速电压与转速之间的系数
+#define  NOMBER_OF_TURNS_PRE_VOLTAGE_PRE_SECODE 0.2926   //外部调速电压与转速之间的系数:当驱动电压为1v时，电机每秒钟的转数
 
 enum WHICH_MOTOR {
 	LEFT_MOTOR = 1,
@@ -32,5 +32,7 @@ void AGV_control(AGV_control_t * AGV_control_data_p);
 void AGV_run(void);
 void motor_speed_set(u8 WHICH_MOTOR,float Speed);
 void AGV_stop(void);
+void AGV_V_set(float speed);
+void AGV_pre_set(void);
 
 #endif //__MOTOR_H

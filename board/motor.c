@@ -1,13 +1,24 @@
 #include "public.h"
 #include "motor.h"
 #include "board.h"
+#include "camera.h"
 
-static void DAC_8551_set(SPI_TypeDef* SPIx,int cnt)
+static float DAC_8551_set(SPI_TypeDef* SPIx,float Voltage)
 {
-
+	int cnt = 0;
+	
+	if(Voltage < 0 )
+	{
+		Voltage = 0;
+	}
+	 if(Voltage > 4.5)
+		 Voltage = 4.5;
+	cnt = Voltage * 0xffff / V_REF;
 	SPI_I2S_SendData(SPIx,0);
 	SPI_I2S_SendData(SPIx,cnt / 0xff);
 	SPI_I2S_SendData(SPIx,cnt % 0xff);
+	 
+	return  Voltage;
 	
 }
 
@@ -15,35 +26,30 @@ static void DAC_8551_set(SPI_TypeDef* SPIx,int cnt)
 void motor_speed_set(u8 WHICH_MOTOR,float Speed)
 {
 	float Voltage = 0;
-	int cnt = 0;
-	
-	Voltage = Speed / PI / D_MOTOR / CNT_PRE_MIN_PRE_V;
-	cnt = Voltage * 0xffff / V_REF;
+	Voltage = Speed / PI / (D_MOTOR  / 100) / NOMBER_OF_TURNS_PRE_VOLTAGE_PRE_SECODE;
 	
 	switch(WHICH_MOTOR)
 	{
 		case LEFT_MOTOR:
+			Voltage += 0.09;
 			GPIO_ResetBits(GPIOD,MLF_CS);
-			DAC_8551_set(SPI1,cnt);
+			AGV_status.left_Voltage = DAC_8551_set(SPI1,Voltage);
 			GPIO_SetBits(GPIOD,MLF_CS);
-			AGV_status.V_left_test_request = 1;
 			break;
 		case RIGHT_MOTOR:
+			Voltage += 0.096;
 			GPIO_ResetBits(GPIOD,MRG_CS);
-			DAC_8551_set(SPI1,cnt);
+			AGV_status.right_Voltage = DAC_8551_set(SPI1,Voltage);
 			GPIO_SetBits(GPIOD,MRG_CS);
-			AGV_status.V_right_cnt = cnt;
-			//开启右轮速度测量请求
-			AGV_status.V_right_test_request = 1;
 			break;
 		case UP_DOWN_MOTOR:
 			GPIO_ResetBits(GPIOE,MUD_CS);
-			DAC_8551_set(SPI1,cnt);
+			DAC_8551_set(SPI1,Voltage);
 			GPIO_SetBits(GPIOE,MUD_CS);
 			break;
 		case ROTATION_MOTOR:
 			GPIO_ResetBits(GPIOE,MRO_CS);
-			DAC_8551_set(SPI1,cnt);
+			DAC_8551_set(SPI1,Voltage);
 			GPIO_SetBits(GPIOE,MRO_CS);
 			break;
 		
@@ -101,10 +107,10 @@ void motor_run(u8 WHICH_MOTOR,u8 CW_CCW)
 
 void AGV_run(void)
 {
-//	motor_speed_set(LEFT_MOTOR,100);
-	//motor_speed_set(RIGHT_MOTOR,100);
 	motor_run(LEFT_MOTOR,CW);
 	motor_run(RIGHT_MOTOR,CCW);
+	AGV_status.runing_status = 1;
+	AGV_status.rotating_status = 0;
 	
 }
 
@@ -135,6 +141,9 @@ void AGV_stop(void)
 {
 	motor_stop(LEFT_MOTOR);
 	motor_stop(RIGHT_MOTOR);
+	AGV_status.runing_status = 0;
+	AGV_status.rotating_status = 0;
+
 }
 
 void AGV_rotation_cotrol(u8 LEFT_OR_RIGHT,u8 Degree)
@@ -174,14 +183,10 @@ void AGV_rotation_cotrol(u8 LEFT_OR_RIGHT,u8 Degree)
 
 void V_left_set(float degree_alignment)
 {
-	float k;
-	int cnt_left;
-	k = degree_alignment * LEN_WHELLS * ACON_PID_CONTROL_RATE / AGV_status.V_right + 1;
-	cnt_left = k * AGV_status.V_right_cnt;
-	
-	GPIO_ResetBits(GPIOD,MLF_CS);
-	DAC_8551_set(SPI1,cnt_left);
-	GPIO_SetBits(GPIOD,MLF_CS);
+	float V_Left_targer = 0; 
+	V_Left_targer = degree_alignment * PI / 180 * (LEN_WHELLS / 100) * ACON_PID_CONTROL_RATE + AGV_status.V_right;
+	motor_speed_set(LEFT_MOTOR,V_Left_targer);
+
 }
 
 
@@ -197,24 +202,24 @@ void AGV_run_control(float len_offset, float degree_offset,float len_dest)
 		}
 	#endif
 		//PID 调整
-		if(len_offset < ACON_PID_CONTROL_LEN_OFFSET && len_offset > ACON_PID_CONTROL_LEN_OFFSET)
+		if(len_offset < ACON_PID_CONTROL_LEN_OFFSET && len_offset > -ACON_PID_CONTROL_LEN_OFFSET)
 		{
 			//航线偏差在许可范围内，调整航向角，使之为零
-			PID_data.err_now = -degree_offset;
+			PID_data.err_now = -degree_offset / 10.0;
 			
 		}
 		else
 		{
 			//航线偏差过大，调整航向角，使之在下一个二维码的位置回到航线
-			PID_data.err_now = -(degree_offset + 2 * PI * len_offset / len_dest);
+			PID_data.err_now = -(degree_offset + 180 * len_offset / len_dest / PI) / 10.0;
 		}
 		alignment = PID_process(&PID_data);
 		V_left_set(alignment);
 
 
 			//zzs debug
-		#if 1
-		if(len_dest <  ACON_DEST_LEN_OFFSET || len_dest > -ACON_DEST_LEN_OFFSET)
+		#if 0
+		if(len_dest <  ACON_DEST_LEN_OFFSET && len_dest > -ACON_DEST_LEN_OFFSET)
 		{
 			motor_stop(LEFT_MOTOR);
 			motor_stop(RIGHT_MOTOR);
@@ -272,8 +277,55 @@ void AGV_control(AGV_control_t * AGV_control_data_p)
 		
 		
 	}
-	
+
 
 }
 
+void AGV_V_set(float speed)
+{
+	motor_speed_set(RIGHT_MOTOR,speed);
+	motor_speed_set(LEFT_MOTOR,speed);
+}
+
+
+
+void AGV_pre_set(void)
+{
+	AGV_V_set(0.01);
+	if(AGV_status.Directon > 0)
+	{
+		if(AGV_status.Directon > 1)
+		{
+			motor_run(LEFT_MOTOR,CCW);
+			motor_run(RIGHT_MOTOR,CCW);
+		}
+		else
+		{
+			AGV_status.init_Directon_flag = 1;
+		}
+	}
+	else
+	{
+		if(AGV_status.Directon  < -1)
+		{
+			motor_run(RIGHT_MOTOR,CW);
+			motor_run(RIGHT_MOTOR,CW);
+			
+		}
+		else
+		{
+			AGV_status.init_Directon_flag = 1;
+		}
+	}
+	if(AGV_status.init_Directon_flag)
+	{
+		motor_stop(LEFT_MOTOR);
+		motor_stop(RIGHT_MOTOR);
+		CON_ENCODE_LEFT->CNT  = 0;
+		CON_ENCODE_RIGHT->CNT  = 0;
+		
+	}
+		
+	
+}
 

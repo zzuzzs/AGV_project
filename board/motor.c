@@ -211,7 +211,7 @@ void AGV_run_control(float len_offset, float degree_offset,float len_dest)
 		else
 		{
 			//航线偏差过大，调整航向角，使之在下一个二维码的位置回到航线
-			PID_data.err_now = -(degree_offset + 180 * len_offset / len_dest / PI) / 10.0;
+			PID_data.err_now = -(degree_offset + 180 * len_offset / ACON_LEN_QR / PI) / 10.0;
 		}
 		alignment = PID_process(&PID_data);
 		V_left_set(alignment);
@@ -294,7 +294,7 @@ void AGV_pre_set(void)
 	AGV_V_set(0.01);
 	if(AGV_status.Directon > 0)
 	{
-		if(AGV_status.Directon > 1)
+		if(AGV_status.Directon > 0.5)
 		{
 			motor_run(LEFT_MOTOR,CCW);
 			motor_run(RIGHT_MOTOR,CCW);
@@ -306,9 +306,9 @@ void AGV_pre_set(void)
 	}
 	else
 	{
-		if(AGV_status.Directon  < -1)
+		if(AGV_status.Directon  < -0.5)
 		{
-			motor_run(RIGHT_MOTOR,CW);
+			motor_run(LEFT_MOTOR,CW);
 			motor_run(RIGHT_MOTOR,CW);
 			
 		}
@@ -325,7 +325,6 @@ void AGV_pre_set(void)
 		CON_ENCODE_RIGHT->CNT  = 0;
 		
 	}
-		
-	
+
 }
 

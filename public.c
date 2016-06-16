@@ -3,16 +3,29 @@
 #include "includes.h"
 #include "public.h"
 #include <stdio.h>
+#include "camera.h"
 
 
 AGV_status_t AGV_status = {0};
-AGV_control_t AGV_control_data = {800,400};
+AGV_control_t AGV_control_data_1 = {0,480,NULL};
+AGV_control_t AGV_control_data_2 = {800,400,NULL};
+AGV_control_t AGV_control_data_3 = {0,400,NULL};
+AGV_control_t AGV_control_data_4 = {0,0,NULL};
+AGV_control_t *AGV_control_data_now = NULL;
 PID_data_t PID_data = {0};
 u32 systick = 0;
 
-
-
 u8 command_buf[9] = {0};
+
+
+void AGV_control_data_init(void)
+{
+	AGV_control_data_1.next = &AGV_control_data_2;
+	AGV_control_data_2.next = &AGV_control_data_3;
+	AGV_control_data_3.next = &AGV_control_data_4;
+	AGV_control_data_4.next = &AGV_control_data_1;
+	AGV_control_data_now = &AGV_control_data_1;
+}
 
 
 
@@ -143,10 +156,13 @@ void status_printf(AGV_status_t *p)
 	
 	sprintf(tmp,"F%d\n",p->encode_left_cnt);
 	usart_sent(tmp);
-	*/
+	
 	sprintf(tmp,"G%f\n",p->Directon < 180 ? p->Directon : p->Directon - 360);
 	usart_sent(tmp);
-
+*/
+	sprintf(tmp,"H%f\n",p->Y_location);
+	usart_sent(tmp);
+	
 }
 
 

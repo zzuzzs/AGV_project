@@ -190,11 +190,10 @@ void USART3_IRQHandler(void)
 }
 #endif    //CON_DEBUG_USART3
 
-
-
 void SysTick_Handler(void)
 {
 	int tmp = 0,cnt = 0;
+	float LEN_right = 0,LEN_left = 0;
 	systick++;
 	
 	if(systick % ACON_PID_CONTROL_TIME == 0)
@@ -211,7 +210,31 @@ void SysTick_Handler(void)
 			AGV_status.V_left  = cnt * PI * (D_MOTOR / 100.0) / CON_ENCODE_CNT / ACON_PID_CONTROL_TIME * 1000;
 			AGV_status.encode_left_cnt = tmp;
 		
-			AGV_control(&AGV_control_data);
+			if(LEN_UPDATA_WRITING == AGV_status.updata_waitting_status)
+			{
+				LEN_right = AGV_status.V_right * ACON_PID_CONTROL_TIME / 1000 * 100;
+				LEN_left = AGV_status.V_left * ACON_PID_CONTROL_TIME / 1000 * 100;
+				switch(AGV_status.runing_towards)
+				{
+					case 0:
+						AGV_status.X_location += (LEN_right + LEN_left) / 2;
+					break;
+					case 90:
+						AGV_status.Y_location += (LEN_right + LEN_left) / 2;
+					break;
+					case 180:
+						AGV_status.X_location -= (LEN_right + LEN_left) / 2;
+					break;
+					case 270:
+						AGV_status.Y_location -= (LEN_right + LEN_left) / 2;
+					break;
+				}
+				
+				GPIO_SetBits(GPIOA,GPIO_Pin_12);
+				
+			}
+			
+			AGV_control(AGV_control_data_now);
 		}
 	}
 }

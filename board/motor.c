@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "public.h"
 #include "motor.h"
 #include "board.h"
@@ -146,14 +147,14 @@ void AGV_stop(void)
 
 }
 
-void AGV_rotation_cotrol(u8 LEFT_OR_RIGHT,u8 Degree)
+void AGV_rotation_cotrol(void)
 {
 	u16 Degree_status = 0;
 	Degree_status = AGV_status.Directon;
-	motor_speed_set(LEFT_MOTOR,0.5);
-	motor_speed_set(RIGHT_MOTOR,0.5);
-//	motor_speed_set(ROTATION_MOTOR,0.5);
-	switch(LEFT_OR_RIGHT)
+	motor_speed_set(LEFT_MOTOR,0.10);
+	motor_speed_set(RIGHT_MOTOR,0.10);
+//	motor_speed_set(ROTATION_MOTOR,0.10);
+	switch(AGV_status.rotating_towards)
 	{
 		case LEFT:
 			motor_run(LEFT_MOTOR,CW);
@@ -189,18 +190,30 @@ void V_left_set(float degree_alignment)
 
 }
 
+static void init_next_run_control(void)
+{
+	AGV_control_data_now = AGV_control_data_now->next;
+	if(NULL == AGV_control_data_now)
+	{
+		//如果没下步指令时该如何做？
+		return;
+	}
+	
+	
+}
+
+
+
 
 
 void AGV_run_control(float len_offset, float degree_offset,float len_dest)
 {
 		float alignment;
 	
-	#if 0
 		if(len_dest < ACON_DEST_CONTROL_LEN)
 		{
 			AGV_status.updata_waitting_status = LEN_UPDATA_WRITING;
 		}
-	#endif
 		//PID 调整
 		if(len_offset < ACON_PID_CONTROL_LEN_OFFSET && len_offset > -ACON_PID_CONTROL_LEN_OFFSET)
 		{
@@ -216,16 +229,14 @@ void AGV_run_control(float len_offset, float degree_offset,float len_dest)
 		alignment = PID_process(&PID_data);
 		V_left_set(alignment);
 
-
-			//zzs debug
-		#if 0
 		if(len_dest <  ACON_DEST_LEN_OFFSET && len_dest > -ACON_DEST_LEN_OFFSET)
 		{
 			motor_stop(LEFT_MOTOR);
 			motor_stop(RIGHT_MOTOR);
 			AGV_status.runing_status = 0;
+			AGV_status.updata_waitting_status = 0;
+			init_next_run_control();
 		}
-		#endif
 		
 }
 
@@ -240,26 +251,23 @@ void AGV_control(AGV_control_t * AGV_control_data_p)
 		switch(AGV_status.runing_towards)
 		{
 			case 0:
-				len_dest = AGV_control_data_p->dest_Y - AGV_status.Y_location;  //始终为正
-				len_offset = AGV_status.X_offset;      //左偏为负，右偏为正
+				len_dest = AGV_control_data_p->dest_X - AGV_status.X_location;  //始终为正
 				degree_offset =  AGV_status.Directon > 180 ? AGV_status.Directon - 360 : AGV_status.Directon;   //航向角偏差：向左偏位负，向右偏为正
 				break;
 			case 90:
-				len_dest = AGV_control_data_p->dest_X - AGV_status.X_location;
-				len_offset = AGV_status.Y_offset;
+				len_dest = AGV_control_data_p->dest_Y - AGV_status.Y_location;
 				degree_offset = AGV_status.Directon - 90;
 				break;
 			case 180:
-				len_dest = AGV_status.Y_location - AGV_control_data_p->dest_Y;
-				len_offset = AGV_status.X_offset;
+				len_dest = AGV_status.X_location - AGV_control_data_p->dest_X;
 				degree_offset = AGV_status.Directon - 180;
 				break;
 			case 270:
-				len_dest = AGV_status.X_location - AGV_control_data_p->dest_X;
-				len_offset = AGV_status.Y_offset;
+				len_dest = AGV_status.Y_location - AGV_control_data_p->dest_Y;
 				degree_offset = AGV_status.Directon - 270;
 				break;
 		}
+		len_offset = AGV_status.X_offset;      //左偏为负，右偏为正
 		AGV_run_control(len_offset,degree_offset,len_dest);
 		
 	}

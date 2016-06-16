@@ -123,21 +123,28 @@ static void  camera_data_analysis(char * data)
 	
 	__disable_irq();
 	AGV_status.X_offset = (cameradata.x - PIC_CENTRE_X) * LEN_PER_PIC / 10;
-	AGV_status.Y_offset = (cameradata.y - PIC_CENTRE_Y) * LEN_PER_PIC / 10;
-	AGV_status.X_location  = (cameradata.number / 100.0) * ACON_LEN_QR + AGV_status.X_offset;
-	AGV_status.Y_location  = (cameradata.number % 100) * ACON_LEN_QR + AGV_status.Y_offset;
+	AGV_status.Y_offset = (PIC_CENTRE_Y - cameradata.y) * LEN_PER_PIC / 10;
+	
 	switch(AGV_status.runing_towards)
 	{
 		case 0:
+			AGV_status.X_location  = (cameradata.number / 100) * ACON_LEN_QR + AGV_status.Y_offset - LEN_CAMERA_TO_CENTRE;
+			AGV_status.Y_location  = (cameradata.number % 100) * ACON_LEN_QR + AGV_status.X_offset;
 			AGV_status.Directon =  cameradata.O > 0 ? 180 - cameradata.O : -(cameradata.O + 180);
 			break;
 		case 90:
+			AGV_status.X_location  = (cameradata.number / 100) * ACON_LEN_QR - AGV_status.X_offset;
+			AGV_status.Y_location  = (cameradata.number % 100) * ACON_LEN_QR + AGV_status.Y_offset - LEN_CAMERA_TO_CENTRE;
 			AGV_status.Directon =  90 - cameradata.O;
 		break;
 		case 180:
+			AGV_status.X_location  = (cameradata.number / 100) * ACON_LEN_QR - AGV_status.Y_offset + LEN_CAMERA_TO_CENTRE;
+			AGV_status.Y_location  = (cameradata.number % 100) * ACON_LEN_QR - AGV_status.X_offset;
 			AGV_status.Directon =  - cameradata.O;
 		break;
 		case 270:
+			AGV_status.X_location  = (cameradata.number / 100) * ACON_LEN_QR + AGV_status.X_offset;
+			AGV_status.Y_location  = (cameradata.number % 100) * ACON_LEN_QR - AGV_status.Y_offset + LEN_CAMERA_TO_CENTRE;
 			AGV_status.Directon =  -(90 + cameradata.O);
 		break;
 	}
@@ -145,7 +152,7 @@ static void  camera_data_analysis(char * data)
 	PID_data.err_now = 0;
 	__enable_irq();
 	camera_status.init_flag = 1; 
-	GPIO_SetBits(GPIOA,GPIO_Pin_12);
+	//GPIO_SetBits(GPIOA,GPIO_Pin_12);
 }
 
 

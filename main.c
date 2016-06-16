@@ -16,13 +16,13 @@ int main(void)
 	__disable_irq();
 	boardinit();
 	PID_init();
+	AGV_control_data_init();
 	__enable_irq();
 
 	sFLASH_ReadBuffer(&ResetTest,ResetTest_ADDR,1);
 
 	if(ResetTest!=0x55)
 	{
-		GPIO_SetBits(GPIOA,MCU_LED1);
 		sFLASH_Reset();
 		sFLASH_WriteBuffer(&Reset_Flag,ResetTest_ADDR,1);
 	}

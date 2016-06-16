@@ -10,29 +10,33 @@ typedef volatile struct {
 	u8 runbutton_status;    //标志行驶按钮状态
 	u8 suspendbutton_status;    //标志暂停按钮状态
 	u8 rotating_status;				//标志是否处于回转状态
+	u8 rotating_towards;     //回转方向
+	int8_t rotating_degree;  //回转角度
 	u8 runing_status;				//标志是否处于直行状态
 	u8 up_down_status;      // 标志托盘状态
 	u8 updata_waitting_status; //标志前台程序是否等待后台程序（中断）更新小车状态数据
 	u8 init_Directon_flag;
-	u16 runing_towards;    //小车设定航向,即与X轴正向夹角 0,90,180,270
+	 
+	u16 runing_towards;    //小车设定航向,即与X轴正向顺时针夹角 0,90,180,270.地面坐标系
 	u16 encode_right_cnt;
 	u16 encode_left_cnt;
-	float V_right;			//小车右轮速度测量值
-	float V_left;				//小车左轮速度测量值
-	float X_location;   //X轴向相对于原点的实际位置
-	float X_offset;			
-	float Y_location;		//Y轴向相对于原点的实际位置
-	float Y_offset;			
-	float Directon;			//小车行进方向与X轴正向实际夹角	
-	float right_Voltage;
-  float left_Voltage;
+	float V_right;			//小车右轮速度测量值 单位m/s
+	float V_left;				//小车左轮速度测量值 单位m/s
+	float X_location;   //小车X轴方向的实际位置，单位cm，地面坐标系
+	float Y_location;		//小车Y轴方向的实际位置，单位cm，地面坐标系
+	float X_offset;			//相机X轴方向相对于二维码的位置，左负右正.单位cm，小车坐标系 :小车正前方为X轴正向，右侧为Y轴正向
+	float Y_offset;			//相机Y轴方向相对于二维码的位置，单位cm，小车坐标系
+	float Directon;			//小车行进方向与X轴正向实际夹角，单位度。地面坐标系
+	float right_Voltage;  //单位 V
+  float left_Voltage;		//单位 V
 	
 	
 } AGV_status_t;
 
-typedef struct {
+typedef struct _AGV_control_ {
 	dest_data_size_t dest_X;
 	dest_data_size_t dest_Y;
+	struct _AGV_control_ *next;
 
 } AGV_control_t;
 
@@ -70,7 +74,11 @@ enum  COMMAND_TYPE{
 
 
 extern AGV_status_t AGV_status;
-extern AGV_control_t AGV_control_data;
+extern AGV_control_t AGV_control_data_1;
+extern AGV_control_t AGV_control_data_2;
+extern AGV_control_t AGV_control_data_3;
+extern AGV_control_t AGV_control_data_4;
+extern AGV_control_t *AGV_control_data_now;
 extern PID_data_t PID_data;
 
 extern u32 systick;
@@ -82,6 +90,7 @@ void delay_ms(u32 cnt);
 void START_BUTTON_IRQ_Set(FunctionalState status);
 void TUOLUOYI_IRQ_Set(FunctionalState status);
 void CAMERA_IRQ_Set(FunctionalState status);
+void AGV_control_data_init(void);
 void PID_init(void);
 float PID_process(PID_data_t * PID_data_p);
 void command_process(void);

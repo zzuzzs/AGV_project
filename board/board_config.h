@@ -4,11 +4,11 @@
 
 
 #define CON_ENCODE_CNT  8000
-#define D_MOTOR		16.0		//轮子直径,单位cm
+#define D_MOTOR		17.5		//轮子直径,单位cm
 
 
 #define LEN_WHELLS  65.4   //轮间距,单位cm
-#define LEN_CAMERA_TO_CENTRE    50    //相机中心到小车中心的距离 单位cm
+#define LEN_CAMERA_TO_CENTRE    49.5    //相机中心到小车中心的距离 单位cm
 
 
 //#define CON_TUOLUOYI_USART1	 

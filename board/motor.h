@@ -17,8 +17,8 @@ enum CW_CCW{
 };
 
 enum LEFT_OR_RIGHT{
-	LEFT,
-	RIGHT,
+	LEFT = 1,
+	RIGHT = 2,
 };
 
 enum AGV_UPDATA_STATUS{

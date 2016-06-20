@@ -27,7 +27,10 @@ enum AGV_UPDATA_STATUS{
 };
 
 
-void AGV_control(AGV_control_t * AGV_control_data_p);
+
+
+//void AGV_control(AGV_control_t * AGV_control_data_p);
+void AGV_control(void);
 
 void AGV_run(void);
 void motor_speed_set(u8 WHICH_MOTOR,float Speed);

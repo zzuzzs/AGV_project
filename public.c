@@ -4,14 +4,14 @@
 #include "public.h"
 #include <stdio.h>
 #include "camera.h"
+#include "tuoluoyi.h"
 
 
 AGV_status_t AGV_status = {0};
-AGV_control_t AGV_control_data_1 = {0,480,NULL};
-AGV_control_t AGV_control_data_2 = {800,400,NULL};
-AGV_control_t AGV_control_data_3 = {0,400,NULL};
-AGV_control_t AGV_control_data_4 = {0,0,NULL};
-AGV_control_t *AGV_control_data_now = NULL;
+AGV_control_t AGV_control_data_1 = {0};
+AGV_control_t AGV_control_data_2 = {0};
+AGV_control_t AGV_control_data_3 = {0};
+AGV_control_t AGV_control_data_4 = {0};
 PID_data_t PID_data = {0};
 u32 systick = 0;
 
@@ -20,11 +20,16 @@ u8 command_buf[9] = {0};
 
 void AGV_control_data_init(void)
 {
+	AGV_control_data_1.available_flag  = 1;
+	AGV_control_data_1.data_type = RUNING_TYPE;
+	AGV_control_data_1.data.dest_data.dest_X = 480;
+	AGV_control_data_1.data.dest_data.dest_Y = 400;
+	
 	AGV_control_data_1.next = &AGV_control_data_2;
 	AGV_control_data_2.next = &AGV_control_data_3;
 	AGV_control_data_3.next = &AGV_control_data_4;
 	AGV_control_data_4.next = &AGV_control_data_1;
-	AGV_control_data_now = &AGV_control_data_1;
+	AGV_status.AGV_control_p = &AGV_control_data_1;
 }
 
 
@@ -159,8 +164,12 @@ void status_printf(AGV_status_t *p)
 	
 	sprintf(tmp,"G%f\n",p->Directon < 180 ? p->Directon : p->Directon - 360);
 	usart_sent(tmp);
-*/
-	sprintf(tmp,"H%f\n",p->Y_location);
+
+	sprintf(tmp,"H%f\n",p->X_location);
+	usart_sent(tmp);
+	*/
+	
+	sprintf(tmp,"I%f\n",tuoluoyiinfo.yaw);
 	usart_sent(tmp);
 	
 }

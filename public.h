@@ -5,6 +5,29 @@
 #include "includes.h"
 
 /* Exported types ------------------------------------------------------------*/
+typedef struct {
+	dest_data_size_t dest_X;
+	dest_data_size_t dest_Y;
+	
+} dest_data_t;
+
+typedef struct {
+	u8 rotating_towards;
+	u16 rotating_degree;
+} rotating_data_t;
+
+ typedef union  {
+		dest_data_t dest_data;
+		rotating_data_t rotating_data;
+} AGV_data_t;
+
+typedef struct _AGV_control_ {
+	u16 data_type;
+	u8  available_flag;
+	AGV_data_t data;
+	struct _AGV_control_ *next;
+} AGV_control_t;
+
 
 typedef volatile struct {
 	u8 runbutton_status;    //标志行驶按钮状态
@@ -16,7 +39,6 @@ typedef volatile struct {
 	u8 up_down_status;      // 标志托盘状态
 	u8 updata_waitting_status; //标志前台程序是否等待后台程序（中断）更新小车状态数据
 	u8 init_Directon_flag;
-	 
 	u16 runing_towards;    //小车设定航向,即与X轴正向顺时针夹角 0,90,180,270.地面坐标系
 	u16 encode_right_cnt;
 	u16 encode_left_cnt;
@@ -24,21 +46,15 @@ typedef volatile struct {
 	float V_left;				//小车左轮速度测量值 单位m/s
 	float X_location;   //小车X轴方向的实际位置，单位cm，地面坐标系
 	float Y_location;		//小车Y轴方向的实际位置，单位cm，地面坐标系
-	float X_offset;			//相机X轴方向相对于二维码的位置，左负右正.单位cm，小车坐标系 :小车正前方为X轴正向，右侧为Y轴正向
+	float X_offset;			//相机X轴方向相对于二维码的位置，左负右正.单位cm，小车坐标系 :小车正前方为Y轴正向，右侧为X轴正向
 	float Y_offset;			//相机Y轴方向相对于二维码的位置，单位cm，小车坐标系
 	float Directon;			//小车行进方向与X轴正向实际夹角，单位度。地面坐标系
 	float right_Voltage;  //单位 V
   float left_Voltage;		//单位 V
-	
-	
+	AGV_control_t *AGV_control_p;
 } AGV_status_t;
 
-typedef struct _AGV_control_ {
-	dest_data_size_t dest_X;
-	dest_data_size_t dest_Y;
-	struct _AGV_control_ *next;
 
-} AGV_control_t;
 
 
 typedef struct {
@@ -52,12 +68,17 @@ typedef struct {
 		
 } PID_data_t;
 
-enum  COMMAND_TYPE{
+enum  command_type{
 	PID_VALUE = 1,
 	START_BUTTON = 2,
 	
 };
 
+enum control_type{
+	RUNING_TYPE = 1,
+	STOP_TYPE   = 2,
+	ROTATION_TYPE = 3
+};
 
 /* Exported constants --------------------------------------------------------*/
 #define  PI 3.1415926
@@ -78,7 +99,7 @@ extern AGV_control_t AGV_control_data_1;
 extern AGV_control_t AGV_control_data_2;
 extern AGV_control_t AGV_control_data_3;
 extern AGV_control_t AGV_control_data_4;
-extern AGV_control_t *AGV_control_data_now;
+
 extern PID_data_t PID_data;
 
 extern u32 systick;

@@ -152,7 +152,7 @@ static void  camera_data_analysis(char * data)
 	PID_data.err_now = 0;
 	__enable_irq();
 	camera_status.init_flag = 1; 
-	//GPIO_SetBits(GPIOA,GPIO_Pin_12);
+
 }
 
 

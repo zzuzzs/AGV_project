@@ -12,10 +12,11 @@
 
 #define ACON_SYSIRQ_TIME  1  //系统中断时间 单位ms
 
-#define ACON_V_AGV   1  //AGV 小车速度，单位m/s
+#define ACON_V_INIT      0.10   //小车初始速度 单位m/s
+#define ACON_ROTATION_SPEED 0.05  //原地转弯的速度  单位m/s
 #define ACON_DEGREE_OFFSET 2  //小车转弯时角度容错
-#define ACON_DEST_CONTROL_LEN    160  //行驶时的控制点
-#define ACON_DEST_LEN_OFFSET    10  //行驶时的控制容错
+#define ACON_DEST_CONTROL_LEN    70  //行驶时的控制点
+#define ACON_DEST_LEN_OFFSET    1  //行驶时的控制容错
 
 #define ACON_LEN_QR         80.0  //相邻两个二维码之间的间距 单位cm
 
@@ -41,7 +42,7 @@
 #define  ACON_PID_CONTROL_RATE  (1000 / ACON_PID_CONTROL_TIME)    // PID调节频率
 #define  ACON_PID_CONTROL_LEN_OFFSET   2 												// PID 调节控制航线偏差，单位cm
 
-#define ACON_PID_KP				0.1
+#define ACON_PID_KP				0.4
 #define ACON_PID_TI				(1/100.0) 
 
 
@@ -51,10 +52,10 @@
 //#define ACON_PID_KD				0
 
 
-#define ACON_V_INIT      0.10   //小车初始速度 单位m/s
+
 
 /**********************************************************/
-#define dest_data_size_t  float
+#define dest_data_size_t  int
 
 
 #endif  //__APP_CONFIG_H

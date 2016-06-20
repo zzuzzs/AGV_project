@@ -151,32 +151,22 @@ void AGV_rotation_cotrol(void)
 {
 	u16 Degree_status = 0;
 	Degree_status = AGV_status.Directon;
-	motor_speed_set(LEFT_MOTOR,0.10);
-	motor_speed_set(RIGHT_MOTOR,0.10);
-//	motor_speed_set(ROTATION_MOTOR,0.10);
+	motor_speed_set(LEFT_MOTOR,ACON_ROTATION_SPEED);
+	motor_speed_set(RIGHT_MOTOR,ACON_ROTATION_SPEED);
+//	motor_speed_set(ROTATION_MOTOR,ACON_ROTATION_SPEED);
 	switch(AGV_status.rotating_towards)
 	{
 		case LEFT:
-			motor_run(LEFT_MOTOR,CW);
+			motor_run(LEFT_MOTOR,CCW);
 			motor_run(RIGHT_MOTOR,CCW);
 			//motor_run(ROTATION_MOTOR,CCW);
 			AGV_status.updata_waitting_status = DRGREE_UPDATA_WRITING;
-			while(AGV_status.Directon  + Degree - ACON_DEGREE_OFFSET < Degree_status /*&& AGV_status.Directon  + Degree + ACON_DEGREE_OFFSET > Degree_status*/);
-			AGV_status.updata_waitting_status = 0;
-			motor_stop(LEFT_MOTOR);
-			motor_stop(RIGHT_MOTOR);
-			//motor_stop(ROTATION_MOTOR);
 			break;
 		case RIGHT:
-			motor_run(LEFT_MOTOR,CCW);
+			motor_run(LEFT_MOTOR,CW);
 			motor_run(RIGHT_MOTOR,CW);
 			//motor_run(ROTATION_MOTOR,CW);
 			AGV_status.updata_waitting_status = DRGREE_UPDATA_WRITING;
-			while(AGV_status.Directon  - Degree + ACON_DEGREE_OFFSET > Degree_status /*&& AGV_status.Directon  - Degree - ACON_DEGREE_OFFSET  < Degree_status*/);
-			AGV_status.updata_waitting_status = 0;
-			motor_stop(LEFT_MOTOR);
-			motor_stop(RIGHT_MOTOR);
-			//motor_stop(ROTATION_MOTOR);
 			break;
 	}
 	
@@ -192,12 +182,13 @@ void V_left_set(float degree_alignment)
 
 static void init_next_run_control(void)
 {
-	AGV_control_data_now = AGV_control_data_now->next;
-	if(NULL == AGV_control_data_now)
+	
+	//if()
 	{
 		//如果没下步指令时该如何做？
 		return;
 	}
+	
 	
 	
 }
@@ -229,41 +220,40 @@ void AGV_run_control(float len_offset, float degree_offset,float len_dest)
 		alignment = PID_process(&PID_data);
 		V_left_set(alignment);
 
-		if(len_dest <  ACON_DEST_LEN_OFFSET && len_dest > -ACON_DEST_LEN_OFFSET)
+		if(len_dest <  ACON_DEST_LEN_OFFSET)// && len_dest > -ACON_DEST_LEN_OFFSET)
 		{
 			motor_stop(LEFT_MOTOR);
 			motor_stop(RIGHT_MOTOR);
-			AGV_status.runing_status = 0;
-			AGV_status.updata_waitting_status = 0;
 			init_next_run_control();
 		}
 		
 }
 
 
-void AGV_control(AGV_control_t * AGV_control_data_p)
+void AGV_control(void)
 {
 	if(AGV_status.runing_status)
 	{
 		float degree_offset = 0;
 		float len_dest = 0;
 		float len_offset = 0;
+		AGV_run();
 		switch(AGV_status.runing_towards)
 		{
 			case 0:
-				len_dest = AGV_control_data_p->dest_X - AGV_status.X_location;  //始终为正
+				len_dest = AGV_status.AGV_control_p->data.dest_data.dest_X - AGV_status.X_location;  //始终为正
 				degree_offset =  AGV_status.Directon > 180 ? AGV_status.Directon - 360 : AGV_status.Directon;   //航向角偏差：向左偏位负，向右偏为正
 				break;
 			case 90:
-				len_dest = AGV_control_data_p->dest_Y - AGV_status.Y_location;
+				len_dest = AGV_status.AGV_control_p->data.dest_data.dest_Y - AGV_status.Y_location;
 				degree_offset = AGV_status.Directon - 90;
 				break;
 			case 180:
-				len_dest = AGV_status.X_location - AGV_control_data_p->dest_X;
+				len_dest = AGV_status.X_location - AGV_status.AGV_control_p->data.dest_data.dest_X;
 				degree_offset = AGV_status.Directon - 180;
 				break;
 			case 270:
-				len_dest = AGV_status.Y_location - AGV_control_data_p->dest_Y;
+				len_dest = AGV_status.Y_location - AGV_status.AGV_control_p->data.dest_data.dest_Y;
 				degree_offset = AGV_status.Directon - 270;
 				break;
 		}
@@ -276,6 +266,18 @@ void AGV_control(AGV_control_t * AGV_control_data_p)
 	{
 		
 		//PID调节左轮速度，使之与右轮相同，若处于举升状态，托盘同步回转
+	/*
+		AGV_rotation_cotrol();
+		if(AGV_status.Directon > 270 - 0.5 && AGV_status.Directon < 270 + 0.5)
+		{
+			AGV_stop();
+			AGV_V_set(0.05);
+			
+			AGV_status.runing_status = 1;
+			AGV_status.runing_towards = 270;
+			AGV_status.rotating_status = 0;
+		}
+		*/
 		
 	}
 	

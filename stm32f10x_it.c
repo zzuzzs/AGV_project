@@ -234,7 +234,7 @@ void SysTick_Handler(void)
 				
 			}
 			
-			AGV_control(AGV_control_data_now);
+			AGV_control();
 		}
 	}
 }

@@ -7,8 +7,6 @@
 #include "motor.h"
 #include "flash.h"
 
-u8 AGV_init;
-
 int main(void)
 {
 
@@ -28,6 +26,7 @@ int main(void)
 	}
 
 	AGV_status.runbutton_status = 1;
+	TUOLUOYI_IRQ_Set(ENABLE);
 	while(1)
 	{
 		camera_process();
@@ -71,9 +70,7 @@ TUOLUOYI_PROCESS:
 							
 						//	if(!AGV_status.runbutton_status)
 							//	break;
-							if(systick % 10 == 0){
-								status_printf(&AGV_status);
-							}
+							
 						}
 					}
 					else{
@@ -86,6 +83,6 @@ TUOLUOYI_PROCESS:
 				//}
 			}
 		}
-
 	}
+
 }

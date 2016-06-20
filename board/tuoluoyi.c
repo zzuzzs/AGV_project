@@ -160,7 +160,7 @@ static void Tuoluoyi_data_tan(u8 * data, u8 st, u8 len)
 						{
 							AGV_status.Directon -= 360;
 						}
-						if(AGV_status.Directon  < 0)
+						else if(AGV_status.Directon  < 0)
 						{
 							AGV_status.Directon += 360;
 						}

@@ -202,14 +202,22 @@ void SysTick_Handler(void)
 		{
 			tmp = CON_ENCODE_RIGHT->CNT;
 			cnt = (tmp + (ACON_TIM_CONT- AGV_status.encode_right_cnt)) % ACON_TIM_CONT;
+			if(cnt > ACON_TIM_CONT / 2)
+			{
+				cnt = 0;
+			}
 			AGV_status.V_right  = cnt * PI * (D_MOTOR / 100.0) / CON_ENCODE_CNT / ACON_PID_CONTROL_TIME * 1000;
 			AGV_status.encode_right_cnt = tmp;
 			
 			tmp = CON_ENCODE_LEFT->CNT;
 			cnt = (tmp - AGV_status.encode_left_cnt + ACON_TIM_CONT) % ACON_TIM_CONT;
+			if(cnt > ACON_TIM_CONT / 2)
+			{
+				cnt = 0;
+			}
 			AGV_status.V_left  = cnt * PI * (D_MOTOR / 100.0) / CON_ENCODE_CNT / ACON_PID_CONTROL_TIME * 1000;
 			AGV_status.encode_left_cnt = tmp;
-		
+
 			if(LEN_UPDATA_WRITING == AGV_status.updata_waitting_status)
 			{
 				LEN_right = AGV_status.V_right * ACON_PID_CONTROL_TIME / 1000 * 100;
@@ -229,9 +237,7 @@ void SysTick_Handler(void)
 						AGV_status.Y_location -= (LEN_right + LEN_left) / 2;
 					break;
 				}
-				
-				GPIO_SetBits(GPIOA,GPIO_Pin_12);
-				
+
 			}
 			
 			AGV_control();

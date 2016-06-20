@@ -6,7 +6,6 @@
 u8  CAMERA_RX_BUF[CAMERA_BUF_LEN];   //串口缓存区
 int Camera_rx_sta; 									//串口中断程序在缓存区将要填充的位置
 camera_status_t camera_status = {0};
-
 static camera_data_t cameradata = {0};
 static char tmp[CAMERA_PAKLEN] = {0};
 static char data_st_flag = 0;
@@ -40,11 +39,11 @@ static float XYdata_analysis(char *data)
 {
 	float tmp = 0;
 	
-	if(*data - '0')
+	if( *data != ' ' && *data - '0')
 		tmp += (*data -'0') * 100;
 	data++;
 
-	if(*data - '0')
+	if( *data != ' ' && *data - '0')
 		tmp += (*data -'0') * 10;
 	data++;
 	
@@ -119,7 +118,6 @@ static void  camera_data_analysis(char * data)
 	
 	tuoluoyi_status.clear_flag++;
 	
-	//zzs debug 待完善
 	
 	__disable_irq();
 	AGV_status.X_offset = (cameradata.x - PIC_CENTRE_X) * LEN_PER_PIC / 10;

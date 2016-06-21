@@ -42,14 +42,14 @@
 #define  ACON_PID_CONTROL_RATE  (1000 / ACON_PID_CONTROL_TIME)    // PID调节频率
 #define  ACON_PID_CONTROL_LEN_OFFSET   2 												// PID 调节控制航线偏差，单位cm
 
-#define ACON_PID_KP				0.4
-#define ACON_PID_TI				(1/100.0) 
+#define ACON_PID_RUN_KP				0.4
+#define ACON_PID_RUN_TI				(1/100.0) 
 
 
 
-//#define ACON_PID_KP				7.0
-//#define ACON_PID_TI				(1/3.0)
-//#define ACON_PID_KD				0
+#define ACON_PID_ROTATE_KP				7.0
+#define ACON_PID_ROTATE_TI				(1/3.0)
+
 
 
 

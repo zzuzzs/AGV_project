@@ -13,7 +13,8 @@ int main(void)
 	u8 ResetTest,Reset_Flag = 0x55;
 	__disable_irq();
 	boardinit();
-	PID_init();
+	PID_run_init();
+	PID_rotate_init();
 	AGV_control_data_init();
 	__enable_irq();
 
@@ -26,7 +27,6 @@ int main(void)
 	}
 
 	AGV_status.runbutton_status = 1;
-	TUOLUOYI_IRQ_Set(ENABLE);
 	while(1)
 	{
 		camera_process();
@@ -59,7 +59,8 @@ TUOLUOYI_PROCESS:
 						CAMERA_IRQ_Set(ENABLE);
 						//开前台任务
 						AGV_V_set(ACON_V_INIT);	
-						AGV_run();
+						//AGV_run();
+						AGV_status.AGV_control_p = &AGV_control_data_4;
 						while(1)
 						{
 						//	if(!AGV_status.updata_waitting_status)

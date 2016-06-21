@@ -144,32 +144,32 @@ void AGV_stop(void)
 	motor_stop(RIGHT_MOTOR);
 	AGV_status.runing_status = 0;
 	AGV_status.rotating_status = 0;
-
+	AGV_status.updata_waitting_status = 0;
 }
 
-void AGV_rotation_cotrol(void)
+void AGV_rotate(void)
 {
-	u16 Degree_status = 0;
-	Degree_status = AGV_status.Directon;
+	
 	motor_speed_set(LEFT_MOTOR,ACON_ROTATION_SPEED);
 	motor_speed_set(RIGHT_MOTOR,ACON_ROTATION_SPEED);
 //	motor_speed_set(ROTATION_MOTOR,ACON_ROTATION_SPEED);
-	switch(AGV_status.rotating_towards)
+	switch(AGV_status.AGV_control_p->data.rotating_data.rotating_towards)
 	{
 		case LEFT:
 			motor_run(LEFT_MOTOR,CCW);
 			motor_run(RIGHT_MOTOR,CCW);
 			//motor_run(ROTATION_MOTOR,CCW);
-			AGV_status.updata_waitting_status = DRGREE_UPDATA_WRITING;
+			
 			break;
 		case RIGHT:
 			motor_run(LEFT_MOTOR,CW);
 			motor_run(RIGHT_MOTOR,CW);
 			//motor_run(ROTATION_MOTOR,CW);
-			AGV_status.updata_waitting_status = DRGREE_UPDATA_WRITING;
 			break;
 	}
-	
+	AGV_status.updata_waitting_status = DRGREE_UPDATA_WRITING;   //由于陀螺仪默认状态下一直在更新角度状态，因此此赋值暂无意义
+	AGV_status.rotating_status = 1;	
+	AGV_status.runing_status = 0;
 }
 
 void V_left_set(float degree_alignment)
@@ -182,20 +182,21 @@ void V_left_set(float degree_alignment)
 
 static void init_next_run_control(void)
 {
-	
-	//if()
+	AGV_status.AGV_control_p->available_flag = 0;
+	AGV_status.AGV_control_p = AGV_status.AGV_control_p->next;
+	switch(AGV_status.AGV_control_p->data_type)
 	{
-		//如果没下步指令时该如何做？
-		return;
+		case RUNING_TYPE:
+			AGV_run();
+			break;
+		case STOP_TYPE:
+			AGV_stop();
+			break;
+		case ROTATION_TYPE:
+			AGV_rotate();
+			break;
 	}
-	
-	
-	
 }
-
-
-
-
 
 void AGV_run_control(float len_offset, float degree_offset,float len_dest)
 {
@@ -209,25 +210,38 @@ void AGV_run_control(float len_offset, float degree_offset,float len_dest)
 		if(len_offset < ACON_PID_CONTROL_LEN_OFFSET && len_offset > -ACON_PID_CONTROL_LEN_OFFSET)
 		{
 			//航线偏差在许可范围内，调整航向角，使之为零
-			PID_data.err_now = -degree_offset / 10.0;
+			PID_data_run.err_now = -degree_offset / 10.0;
 			
 		}
 		else
 		{
 			//航线偏差过大，调整航向角，使之在下一个二维码的位置回到航线
-			PID_data.err_now = -(degree_offset + 180 * len_offset / ACON_LEN_QR / PI) / 10.0;
+			PID_data_run.err_now = -(degree_offset + 180 * len_offset / ACON_LEN_QR / PI) / 10.0;
 		}
-		alignment = PID_process(&PID_data);
+		alignment = PID_process(&PID_data_run);
 		V_left_set(alignment);
 
 		if(len_dest <  ACON_DEST_LEN_OFFSET)// && len_dest > -ACON_DEST_LEN_OFFSET)
 		{
-			motor_stop(LEFT_MOTOR);
-			motor_stop(RIGHT_MOTOR);
-			init_next_run_control();
+			AGV_stop();
 		}
 		
 }
+
+void AGV_rotating_control(void)
+{
+	/*
+	//PID调节左轮速度，使之与右轮相同，若处于举升状态，托盘同步回转
+	float tmp = 0;
+	PID_data_rotate.err_now  = AGV_status.V_right - AGV_status.V_left;
+	tmp = PID_process_tmp(&PID_data_rotate);
+	
+	tmp += AGV_status.V_left;
+	motor_speed_set(LEFT_MOTOR,tmp);
+	*/
+	
+}
+
 
 
 void AGV_control(void)
@@ -237,7 +251,6 @@ void AGV_control(void)
 		float degree_offset = 0;
 		float len_dest = 0;
 		float len_offset = 0;
-		AGV_run();
 		switch(AGV_status.runing_towards)
 		{
 			case 0:
@@ -264,27 +277,60 @@ void AGV_control(void)
 
 	if(AGV_status.rotating_status)
 	{
+		float degree_offset = 0;
+		int tmp;
 		
-		//PID调节左轮速度，使之与右轮相同，若处于举升状态，托盘同步回转
-	/*
-		AGV_rotation_cotrol();
-		if(AGV_status.Directon > 270 - 0.5 && AGV_status.Directon < 270 + 0.5)
+		AGV_rotating_control();
+		
+		switch(AGV_status.AGV_control_p->data.rotating_data.rotating_towards)
+		{
+			case LEFT:
+				tmp = AGV_status.runing_towards - AGV_status.AGV_control_p->data.rotating_data.rotating_degree;
+				if(tmp < 0)
+				{
+					AGV_status.runing_towards = 360 + tmp;
+				}
+				else if(tmp > 360)
+				{
+					AGV_status.runing_towards = tmp - 360;
+				}
+				break;
+			case RIGHT:
+				tmp =  AGV_status.runing_towards + AGV_status.AGV_control_p->data.rotating_data.rotating_degree;
+				if(tmp > 360)
+				{
+					AGV_status.runing_towards = tmp - 360;
+				}
+				else if(tmp < 0)
+				{
+					AGV_status.runing_towards = 360 + tmp;
+				}
+				break;
+		}
+		switch(AGV_status.runing_towards)
+		{
+			case 0:
+				degree_offset = AGV_status.Directon > 180 ? AGV_status.Directon - 360 : AGV_status.Directon;
+				break;
+			default:
+				degree_offset = AGV_status.Directon - AGV_status.runing_towards;
+		}
+		if(degree_offset < 0.5 && degree_offset > -0.5)
 		{
 			AGV_stop();
-			AGV_V_set(0.05);
-			
-			AGV_status.runing_status = 1;
-			AGV_status.runing_towards = 270;
-			AGV_status.rotating_status = 0;
 		}
-		*/
+		
 		
 	}
 	
 	if(!(AGV_status.rotating_status || AGV_status.runing_status))
 	{
-		//停止状态下，下步行动的部署
 		
+		//停止状态下，下步行动的部署
+		if(AGV_status.AGV_control_p->next->available_flag)
+			{
+				init_next_run_control();
+			}
 		
 	}
 

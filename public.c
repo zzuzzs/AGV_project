@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include "camera.h"
 #include "tuoluoyi.h"
+#include "motor.h"
 
 
 AGV_status_t AGV_status = {0};
@@ -12,7 +13,8 @@ AGV_control_t AGV_control_data_1 = {0};
 AGV_control_t AGV_control_data_2 = {0};
 AGV_control_t AGV_control_data_3 = {0};
 AGV_control_t AGV_control_data_4 = {0};
-PID_data_t PID_data = {0};
+PID_data_t PID_data_run = {0};
+PID_data_t PID_data_rotate = {0};
 u32 systick = 0;
 
 u8 command_buf[9] = {0};
@@ -22,14 +24,19 @@ void AGV_control_data_init(void)
 {
 	AGV_control_data_1.available_flag  = 1;
 	AGV_control_data_1.data_type = RUNING_TYPE;
-	AGV_control_data_1.data.dest_data.dest_X = 480;
-	AGV_control_data_1.data.dest_data.dest_Y = 400;
+	AGV_control_data_1.data.dest_data.dest_X = 160;
+	AGV_control_data_1.data.dest_data.dest_Y = 480;
+	
+	AGV_control_data_2.available_flag = 1;
+	AGV_control_data_2.data_type = ROTATION_TYPE;
+	AGV_control_data_2.data.rotating_data.rotating_towards = LEFT;
+	AGV_control_data_2.data.rotating_data.rotating_degree = 90;
 	
 	AGV_control_data_1.next = &AGV_control_data_2;
-	AGV_control_data_2.next = &AGV_control_data_3;
+	AGV_control_data_2.next = &AGV_control_data_1;
 	AGV_control_data_3.next = &AGV_control_data_4;
 	AGV_control_data_4.next = &AGV_control_data_1;
-	AGV_status.AGV_control_p = &AGV_control_data_1;
+
 }
 
 
@@ -76,15 +83,26 @@ void TUOLUOYI_IRQ_Set(FunctionalState status)
   NVIC_Init(&NVIC_InitStructure);
 }
 
-void PID_init()
+void PID_run_init()
 {
-	PID_data.Kp = PID_KP;
-	PID_data.Ti = PID_TI;
-//	PID_data.Ki = PID_KI;
-	//PID_data.Kd = PID_KD;
-	PID_data.err_now = 0;
-	PID_data.err_pre_1 = 0;
-//	PID_data.err_pre_2 = 0;
+	PID_data_run.Kp = PID_RUN_KP;
+	PID_data_run.Ti = PID_RUN_TI;
+
+	PID_data_run.err_now = 0;
+	PID_data_run.err_pre_1 = 0;
+	//PID_data_run.err_pre_2 = 0;
+
+}
+
+
+void PID_rotate_init()
+{
+	PID_data_rotate.Kp = PID_RUN_KP;
+	PID_data_rotate.Ti = PID_RUN_TI;
+
+	PID_data_rotate.err_now = 0;
+	PID_data_rotate.err_pre_1 = 0;
+	//PID_data_rotate.err_pre_2 = 0;
 
 }
 
@@ -93,11 +111,21 @@ float  PID_process(PID_data_t * PID_data_p)
 {
 	float tmp = 0;
 	tmp = PID_data_p->Kp * PID_data_p->err_now;//(PID_data_p->err_now - PID_data_p->err_pre_1)  +  \
-				PID_data_p->Kp * (ACON_PID_CONTROL_TIME / 1000) * PID_data_p->err_now / PID_data.Ti;  // +   \
+				PID_data_p->Kp * (ACON_PID_CONTROL_TIME / 1000) * PID_data_p->err_now / PID_data_p->Ti;  // +   \
 				PID_data_p->Kd * ACON_PID_CONTROL_RATE * (PID_data_p->err_now + PID_data_p->err_pre_2 - 2 * PID_data_p->err_pre_1);
 	
 	PID_data_p->err_pre_1 = PID_data_p->err_now;
 	//PID_data_p->err_pre_2 = PID_data_p->err_pre_1;
+	return tmp;
+}
+
+float PID_process_tmp(PID_data_t * PID_data_p)
+{
+	float tmp = 0;
+	tmp = PID_data_p->Kp * (PID_data_p->err_now - PID_data_p->err_pre_1)  +  \
+				PID_data_p->Kp * (ACON_PID_CONTROL_TIME / 1000) * PID_data_p->err_now / PID_data_p->Ti; 
+	
+	PID_data_p->err_pre_1 = PID_data_p->err_now;
 	return tmp;
 }
 
@@ -108,6 +136,7 @@ void command_process(void)
 	
 	switch(command_buf[0])
 	{
+	/*
 		case PID_VALUE:
 			int_part = command_buf[1];
 			float_part = (((u16)command_buf[2] << 8) + command_buf[3]) / 1000.0;
@@ -118,6 +147,7 @@ void command_process(void)
 			PID_data.Ti = int_part +  float_part;
 	
 			break;
+		*/
 		case START_BUTTON:
 			AGV_status.runbutton_status = 1;
 			AGV_status.suspendbutton_status = 0;

@@ -146,8 +146,8 @@ static void  camera_data_analysis(char * data)
 			AGV_status.Directon =  -(90 + cameradata.O);
 		break;
 	}
-	PID_data.err_pre_1 = 0;
-	PID_data.err_now = 0;
+	PID_data_run.err_pre_1 = 0;
+	PID_data_run.err_now = 0;
 	__enable_irq();
 	camera_status.init_flag = 1; 
 

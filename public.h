@@ -12,8 +12,8 @@ typedef struct {
 } dest_data_t;
 
 typedef struct {
-	u8 rotating_towards;
-	u16 rotating_degree;
+	u8 rotating_towards;     //回转方向
+	int8_t rotating_degree;  //回转角度
 } rotating_data_t;
 
  typedef union  {
@@ -33,8 +33,7 @@ typedef volatile struct {
 	u8 runbutton_status;    //标志行驶按钮状态
 	u8 suspendbutton_status;    //标志暂停按钮状态
 	u8 rotating_status;				//标志是否处于回转状态
-	u8 rotating_towards;     //回转方向
-	int8_t rotating_degree;  //回转角度
+	
 	u8 runing_status;				//标志是否处于直行状态
 	u8 up_down_status;      // 标志托盘状态
 	u8 updata_waitting_status; //标志前台程序是否等待后台程序（中断）更新小车状态数据
@@ -77,7 +76,7 @@ enum  command_type{
 enum control_type{
 	RUNING_TYPE = 1,
 	STOP_TYPE   = 2,
-	ROTATION_TYPE = 3
+	ROTATION_TYPE = 3,
 };
 
 /* Exported constants --------------------------------------------------------*/
@@ -87,9 +86,11 @@ enum control_type{
 
 
 /* Exported macro ------------------------------------------------------------*/
-#define PID_KP  ACON_PID_KP
-#define PID_TI  ACON_PID_TI
-//#define PID_KD  ACON_PID_KD
+#define PID_RUN_KP  ACON_PID_RUN_KP
+#define PID_RUN_TI  ACON_PID_RUN_TI
+
+#define PID_ROTATE_KP 	ACON_PID_ROTATE_KP		
+#define PID_ROTATE_TI		ACON_PID_ROTATE_TI
 
 /* Exported variable --------------------------------------------------------*/
 
@@ -100,7 +101,8 @@ extern AGV_control_t AGV_control_data_2;
 extern AGV_control_t AGV_control_data_3;
 extern AGV_control_t AGV_control_data_4;
 
-extern PID_data_t PID_data;
+extern PID_data_t PID_data_run;
+extern PID_data_t PID_data_rotate;
 
 extern u32 systick;
 
@@ -112,8 +114,10 @@ void START_BUTTON_IRQ_Set(FunctionalState status);
 void TUOLUOYI_IRQ_Set(FunctionalState status);
 void CAMERA_IRQ_Set(FunctionalState status);
 void AGV_control_data_init(void);
-void PID_init(void);
+void PID_run_init(void);
+void PID_rotate_init(void);
 float PID_process(PID_data_t * PID_data_p);
+float PID_process_tmp(PID_data_t * PID_data_p);
 void command_process(void);
 void status_printf(AGV_status_t *p);
 #endif  /*__PUBLIC_H*/

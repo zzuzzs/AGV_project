@@ -13,7 +13,7 @@
 #define ACON_SYSIRQ_TIME  1  //系统中断时间 单位ms
 
 #define ACON_V_INIT      0.10   //小车初始速度 单位m/s
-#define ACON_ROTATION_SPEED 0.05  //原地转弯的速度  单位m/s
+#define ACON_ROTATION_SPEED 0.10  //原地转弯的速度  单位m/s
 #define ACON_DEGREE_OFFSET 2  //小车转弯时角度容错
 #define ACON_DEST_CONTROL_LEN    70  //行驶时的控制点
 #define ACON_DEST_LEN_OFFSET    1  //行驶时的控制容错

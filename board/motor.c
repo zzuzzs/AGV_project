@@ -149,7 +149,7 @@ void AGV_stop(void)
 
 void AGV_rotate(void)
 {
-	
+	int tmp = 0;
 	motor_speed_set(LEFT_MOTOR,ACON_ROTATION_SPEED);
 	motor_speed_set(RIGHT_MOTOR,ACON_ROTATION_SPEED);
 //	motor_speed_set(ROTATION_MOTOR,ACON_ROTATION_SPEED);
@@ -159,17 +159,28 @@ void AGV_rotate(void)
 			motor_run(LEFT_MOTOR,CCW);
 			motor_run(RIGHT_MOTOR,CCW);
 			//motor_run(ROTATION_MOTOR,CCW);
-			
+			tmp = AGV_status.runing_towards - AGV_status.AGV_control_p->data.rotating_data.rotating_degree;
 			break;
 		case RIGHT:
 			motor_run(LEFT_MOTOR,CW);
 			motor_run(RIGHT_MOTOR,CW);
 			//motor_run(ROTATION_MOTOR,CW);
+			tmp = AGV_status.runing_towards + AGV_status.AGV_control_p->data.rotating_data.rotating_degree;
 			break;
 	}
+	if(tmp >= 360)
+	{
+		tmp -= 360;
+	}
+	else if(tmp < 0)
+	{
+		tmp += 360;
+	}
+		
 	AGV_status.updata_waitting_status = DRGREE_UPDATA_WRITING;   //由于陀螺仪默认状态下一直在更新角度状态，因此此赋值暂无意义
 	AGV_status.rotating_status = 1;	
 	AGV_status.runing_status = 0;
+	AGV_status.runing_towards = tmp;
 }
 
 void V_left_set(float degree_alignment)
@@ -182,6 +193,7 @@ void V_left_set(float degree_alignment)
 
 static void init_next_run_control(void)
 {
+	int tmp = 0;
 	AGV_status.AGV_control_p->available_flag = 0;
 	AGV_status.AGV_control_p = AGV_status.AGV_control_p->next;
 	switch(AGV_status.AGV_control_p->data_type)
@@ -270,7 +282,7 @@ void AGV_control(void)
 				degree_offset = AGV_status.Directon - 270;
 				break;
 		}
-		len_offset = AGV_status.X_offset;      //左偏为负，右偏为正
+		len_offset = AGV_status.X_offset;      //左偏为负，右偏为正 
 		AGV_run_control(len_offset,degree_offset,len_dest);
 		
 	}
@@ -278,35 +290,10 @@ void AGV_control(void)
 	if(AGV_status.rotating_status)
 	{
 		float degree_offset = 0;
-		int tmp;
 		
 		AGV_rotating_control();
 		
-		switch(AGV_status.AGV_control_p->data.rotating_data.rotating_towards)
-		{
-			case LEFT:
-				tmp = AGV_status.runing_towards - AGV_status.AGV_control_p->data.rotating_data.rotating_degree;
-				if(tmp < 0)
-				{
-					AGV_status.runing_towards = 360 + tmp;
-				}
-				else if(tmp > 360)
-				{
-					AGV_status.runing_towards = tmp - 360;
-				}
-				break;
-			case RIGHT:
-				tmp =  AGV_status.runing_towards + AGV_status.AGV_control_p->data.rotating_data.rotating_degree;
-				if(tmp > 360)
-				{
-					AGV_status.runing_towards = tmp - 360;
-				}
-				else if(tmp < 0)
-				{
-					AGV_status.runing_towards = 360 + tmp;
-				}
-				break;
-		}
+		
 		switch(AGV_status.runing_towards)
 		{
 			case 0:
@@ -315,7 +302,7 @@ void AGV_control(void)
 			default:
 				degree_offset = AGV_status.Directon - AGV_status.runing_towards;
 		}
-		if(degree_offset < 0.5 && degree_offset > -0.5)
+		if(degree_offset < 1 && degree_offset > -1)
 		{
 			AGV_stop();
 		}
@@ -327,7 +314,7 @@ void AGV_control(void)
 	{
 		
 		//停止状态下，下步行动的部署
-		if(AGV_status.AGV_control_p->next->available_flag)
+		if(AGV_status.AGV_control_p->next && AGV_status.AGV_control_p->next->available_flag)
 			{
 				init_next_run_control();
 			}

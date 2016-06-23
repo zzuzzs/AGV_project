@@ -59,16 +59,17 @@ TUOLUOYI_PROCESS:
 						CAMERA_IRQ_Set(ENABLE);
 						//开前台任务
 						AGV_V_set(ACON_V_INIT);	
-						//AGV_run();
-						AGV_status.AGV_control_p = &AGV_control_data_4;
+						AGV_status.AGV_control_p = &AGV_control_data_8;
 						while(1)
 						{
-						//	if(!AGV_status.updata_waitting_status)
-					
+						
 								camera_process();
 								tuoluoyi_process();
 	
-							
+								if(systick % 20 == 5)
+								{
+									status_printf(&AGV_status);
+								}
 						//	if(!AGV_status.runbutton_status)
 							//	break;
 							

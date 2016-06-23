@@ -133,17 +133,17 @@ static void  camera_data_analysis(char * data)
 		case 90:
 			AGV_status.X_location  = (cameradata.number / 100) * ACON_LEN_QR - AGV_status.X_offset;
 			AGV_status.Y_location  = (cameradata.number % 100) * ACON_LEN_QR + AGV_status.Y_offset - LEN_CAMERA_TO_CENTRE;
-			AGV_status.Directon =  90 - cameradata.O;
+			AGV_status.Directon = 180 - cameradata.O;
 		break;
 		case 180:
 			AGV_status.X_location  = (cameradata.number / 100) * ACON_LEN_QR - AGV_status.Y_offset + LEN_CAMERA_TO_CENTRE;
 			AGV_status.Y_location  = (cameradata.number % 100) * ACON_LEN_QR - AGV_status.X_offset;
-			AGV_status.Directon =  - cameradata.O;
+			AGV_status.Directon =  180 - cameradata.O;
 		break;
 		case 270:
 			AGV_status.X_location  = (cameradata.number / 100) * ACON_LEN_QR + AGV_status.X_offset;
 			AGV_status.Y_location  = (cameradata.number % 100) * ACON_LEN_QR - AGV_status.Y_offset + LEN_CAMERA_TO_CENTRE;
-			AGV_status.Directon =  -(90 + cameradata.O);
+			AGV_status.Directon =  180 - cameradata.O;
 		break;
 	}
 	PID_data_run.err_pre_1 = 0;

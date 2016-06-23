@@ -100,7 +100,10 @@ extern AGV_control_t AGV_control_data_1;
 extern AGV_control_t AGV_control_data_2;
 extern AGV_control_t AGV_control_data_3;
 extern AGV_control_t AGV_control_data_4;
-
+extern AGV_control_t AGV_control_data_5;
+extern AGV_control_t AGV_control_data_6;
+extern AGV_control_t AGV_control_data_7;
+extern AGV_control_t AGV_control_data_8;
 extern PID_data_t PID_data_run;
 extern PID_data_t PID_data_rotate;
 

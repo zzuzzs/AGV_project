@@ -13,6 +13,10 @@ AGV_control_t AGV_control_data_1 = {0};
 AGV_control_t AGV_control_data_2 = {0};
 AGV_control_t AGV_control_data_3 = {0};
 AGV_control_t AGV_control_data_4 = {0};
+AGV_control_t AGV_control_data_5 = {0};
+AGV_control_t AGV_control_data_6 = {0};
+AGV_control_t AGV_control_data_7 = {0};
+AGV_control_t AGV_control_data_8 = {0};
 PID_data_t PID_data_run = {0};
 PID_data_t PID_data_rotate = {0};
 u32 systick = 0;
@@ -24,18 +28,52 @@ void AGV_control_data_init(void)
 {
 	AGV_control_data_1.available_flag  = 1;
 	AGV_control_data_1.data_type = RUNING_TYPE;
-	AGV_control_data_1.data.dest_data.dest_X = 160;
-	AGV_control_data_1.data.dest_data.dest_Y = 480;
+	AGV_control_data_1.data.dest_data.dest_X = 800;
+	AGV_control_data_1.data.dest_data.dest_Y = 500;
 	
 	AGV_control_data_2.available_flag = 1;
 	AGV_control_data_2.data_type = ROTATION_TYPE;
-	AGV_control_data_2.data.rotating_data.rotating_towards = LEFT;
+	AGV_control_data_2.data.rotating_data.rotating_towards = RIGHT;
 	AGV_control_data_2.data.rotating_data.rotating_degree = 90;
 	
+	AGV_control_data_3.available_flag = 1;
+	AGV_control_data_3.data_type = RUNING_TYPE;
+	AGV_control_data_3.data.dest_data.dest_X = 800;
+	AGV_control_data_3.data.dest_data.dest_Y = 400;
+	
+	AGV_control_data_4.available_flag = 1;
+	AGV_control_data_4.data_type = ROTATION_TYPE;
+	AGV_control_data_4.data.rotating_data.rotating_towards = RIGHT;
+	AGV_control_data_4.data.rotating_data.rotating_degree = 90;
+	
+	AGV_control_data_5.available_flag = 1;
+	AGV_control_data_5.data_type = RUNING_TYPE;
+	AGV_control_data_5.data.dest_data.dest_X = 0;
+	AGV_control_data_5.data.dest_data.dest_Y = 400;
+	
+	AGV_control_data_6.available_flag = 1;
+	AGV_control_data_6.data_type = ROTATION_TYPE;
+	AGV_control_data_6.data.rotating_data.rotating_towards = RIGHT;
+	AGV_control_data_6.data.rotating_data.rotating_degree = 90;
+	
+	AGV_control_data_7.available_flag = 1;
+	AGV_control_data_7.data_type = RUNING_TYPE;
+	AGV_control_data_7.data.dest_data.dest_X = 0;
+	AGV_control_data_7.data.dest_data.dest_Y = 0;
+	
+	AGV_control_data_8.available_flag = 1;
+	AGV_control_data_8.data_type = ROTATION_TYPE;
+	AGV_control_data_8.data.rotating_data.rotating_towards = RIGHT;
+	AGV_control_data_8.data.rotating_data.rotating_degree = 90;
+	
 	AGV_control_data_1.next = &AGV_control_data_2;
-	AGV_control_data_2.next = &AGV_control_data_1;
+	AGV_control_data_2.next = &AGV_control_data_3;
 	AGV_control_data_3.next = &AGV_control_data_4;
-	AGV_control_data_4.next = &AGV_control_data_1;
+	AGV_control_data_4.next = &AGV_control_data_5;
+	AGV_control_data_5.next = &AGV_control_data_6;
+	AGV_control_data_6.next = &AGV_control_data_7;
+	AGV_control_data_7.next = &AGV_control_data_8;
+	AGV_control_data_8.next = &AGV_control_data_1;
 
 }
 
@@ -192,14 +230,18 @@ void status_printf(AGV_status_t *p)
 	sprintf(tmp,"F%d\n",p->encode_left_cnt);
 	usart_sent(tmp);
 	
-	sprintf(tmp,"G%f\n",p->Directon < 180 ? p->Directon : p->Directon - 360);
-	usart_sent(tmp);
-
+	
 	sprintf(tmp,"H%f\n",p->X_location);
 	usart_sent(tmp);
-	*/
 	
 	sprintf(tmp,"I%f\n",tuoluoyiinfo.yaw);
+	usart_sent(tmp);
+	
+	*/
+	sprintf(tmp,"G%f\n",p->Directon);
+	usart_sent(tmp);
+
+	sprintf(tmp,"J%d\n",p->runing_towards);
 	usart_sent(tmp);
 	
 }

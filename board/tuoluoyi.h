@@ -37,7 +37,7 @@ typedef volatile struct {
 /* Exported constants --------------------------------------------------------*/
 
 #define TUOLUOYI_BUF_LEN  			200	//定义最大接收字节数 200
-#define T  0.05             //陀螺仪采样周期
+#define T  0.01             //陀螺仪采样周期
 #define TUOLUOYI_PAKLEN  33
 
 

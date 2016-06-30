@@ -27,7 +27,7 @@ static float DAC_8551_set(SPI_TypeDef* SPIx,float Voltage)
 void motor_speed_set(u8 WHICH_MOTOR,float Speed)
 {
 	float Voltage = 0;
-	Voltage = Speed / PI / (D_MOTOR  / 100) / NOMBER_OF_TURNS_PRE_VOLTAGE_PRE_SECODE;
+	Voltage = Speed / PI / (D_MOTOR  / 100.0) / NOMBER_OF_TURNS_PRE_VOLTAGE_PRE_SECODE;
 	
 	switch(WHICH_MOTOR)
 	{

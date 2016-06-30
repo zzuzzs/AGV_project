@@ -181,10 +181,13 @@ static void camera_data_tan(u8* data, u8 st, u8 len)
 			if(CAMERA_PAKLEN  == index )
 			{
 				if(*(data + i2) == 0x61)
+				{
 					camera_data_analysis(tmp);
+				}
 				data_st_flag = 0;
 				index = 0;
 			}
+			
 				
 		}
 		else
@@ -206,7 +209,7 @@ void camera_process(void)
 	int len = 0;
 	len = (Camera_rx_sta + CAMERA_BUF_LEN - index_buf)  % CAMERA_BUF_LEN ;  
 																																			
-	if(len > CAMERA_PAKLEN + 1)
+	if(len)
 	{
 		camera_data_tan(CAMERA_RX_BUF, index_buf, len);
 		index_buf += len;

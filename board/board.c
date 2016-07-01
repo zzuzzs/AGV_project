@@ -250,7 +250,6 @@ static void TIM_Configuration(void)
 }
 
 
-/*使用库默认配置，波特率为9600*/
 static void UART_Configuration(void)
 {
 	USART_InitTypeDef USART_InitStruct  = {0};

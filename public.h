@@ -53,6 +53,10 @@ typedef volatile struct {
 	AGV_control_t *AGV_control_p;
 } AGV_status_t;
 
+typedef struct{
+	float Degree;
+	float Degree_kalman;
+} Encode_status_t;
 
 
 
@@ -67,16 +71,45 @@ typedef struct {
 		
 } PID_data_t;
 
+typedef struct {
+	u8 data_type;
+	float * X;
+	struct {
+		float *Encode_measure;
+		float *Tuoluoyi_measure;
+		}	EG;
+	float P;
+	struct{
+		float Encode_Heght;
+		float Tuoluoyi_Heght;
+	}H;
+	float Q;
+	struct{
+		float V_Encode;
+		float V_Tuoluoyi;
+	} V;
+	struct {
+		float R_Encode;
+		float R_Tuoluoyi;
+	} R;
+} kalman_data_t;
+
+
 enum  command_type{
 	PID_VALUE = 1,
 	START_BUTTON = 2,
-	
 };
 
 enum control_type{
 	RUNING_TYPE = 1,
 	STOP_TYPE   = 2,
 	ROTATION_TYPE = 3,
+};
+
+enum kalman_type{
+	TUOLUOYI_DATA = 1,
+	ENCODE_DATA  = 2,
+	DEGREE_DATA = 3,
 };
 
 /* Exported constants --------------------------------------------------------*/
@@ -104,8 +137,13 @@ extern AGV_control_t AGV_control_data_5;
 extern AGV_control_t AGV_control_data_6;
 extern AGV_control_t AGV_control_data_7;
 extern AGV_control_t AGV_control_data_8;
+
+
 extern PID_data_t PID_data_run;
 extern PID_data_t PID_data_rotate;
+extern kalman_data_t Encode_kalman_data;
+extern Encode_status_t Encode_status;
+extern kalman_data_t Degree_kalman_data;
 
 extern u32 systick;
 
@@ -123,5 +161,8 @@ float PID_process(PID_data_t * PID_data_p);
 float PID_process_tmp(PID_data_t * PID_data_p);
 void command_process(void);
 void status_printf(AGV_status_t *p);
+void Encode_kalman_init(void);
+void Degree_kalman_init(void);
+void Kalman_process(kalman_data_t * kalman_data_p);
 #endif  /*__PUBLIC_H*/
 

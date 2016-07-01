@@ -193,7 +193,6 @@ void V_left_set(float degree_alignment)
 
 static void init_next_run_control(void)
 {
-	int tmp = 0;
 	AGV_status.AGV_control_p->available_flag = 0;
 	AGV_status.AGV_control_p = AGV_status.AGV_control_p->next;
 	switch(AGV_status.AGV_control_p->data_type)
@@ -258,6 +257,7 @@ void AGV_rotating_control(void)
 
 void AGV_control(void)
 {
+	Kalman_process(&Degree_kalman_data);
 	if(AGV_status.runing_status)
 	{
 		float degree_offset = 0;

@@ -14,6 +14,7 @@ typedef struct  {
 
 typedef volatile struct {
 	u8 init_flag;    //标志初始位置是否有二维码
+	int number;
 } camera_status_t;
 
 /* Exported constants --------------------------------------------------------*/

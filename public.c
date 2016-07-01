@@ -17,9 +17,16 @@ AGV_control_t AGV_control_data_5 = {0};
 AGV_control_t AGV_control_data_6 = {0};
 AGV_control_t AGV_control_data_7 = {0};
 AGV_control_t AGV_control_data_8 = {0};
+
+
 PID_data_t PID_data_run = {0};
 PID_data_t PID_data_rotate = {0};
+
 u32 systick = 0;
+kalman_data_t Encode_kalman_data = {0};
+Encode_status_t Encode_status = {0};
+
+kalman_data_t Degree_kalman_data = {0};
 
 u8 command_buf[9] = {0};
 
@@ -84,6 +91,117 @@ void delay_ms(u32 cnt)
 	u32 tmp = systick;
 	
 	while(!(systick - tmp  == cnt));
+	
+}
+
+void Encode_kalman_init(void)
+{
+	Encode_kalman_data.data_type = ENCODE_DATA ;
+	Encode_kalman_data.P = 0.001;
+	Encode_kalman_data.H.Encode_Heght = 1;
+	Encode_kalman_data.Q = EMNSTD * EMNSTD;
+	Encode_kalman_data.R.R_Encode = EMNSTD * EMNSTD;
+	Encode_kalman_data.V.V_Encode = EMNSTD;
+	Encode_kalman_data.X = &Encode_status.Degree_kalman;
+	Encode_kalman_data.EG.Encode_measure = &Encode_status.Degree;
+	
+}
+
+
+void Degree_kalman_init(void)
+{
+	Degree_kalman_data.data_type = DEGREE_DATA;
+	Degree_kalman_data.EG.Encode_measure = &Encode_status.Degree_kalman;
+	Degree_kalman_data.EG.Tuoluoyi_measure = &tuoluoyi_status.Degree_kalman;
+	Degree_kalman_data.X = &AGV_status.Directon;
+	Degree_kalman_data.H.Encode_Heght = 1;
+	Degree_kalman_data.H.Tuoluoyi_Heght = 1;
+	Degree_kalman_data.P = 0.001;
+	Degree_kalman_data.Q = PNSTD * PNSTD;
+	Degree_kalman_data.R.R_Encode = EMNSTD * EMNSTD;
+	Degree_kalman_data.R.R_Tuoluoyi  = GMNSTD * GMNSTD;
+	Degree_kalman_data.V.V_Encode  = EMNSTD * EMNSTD;
+	Degree_kalman_data.V.V_Tuoluoyi = GMNSTD * GMNSTD;
+}
+
+
+void Kalman_process(kalman_data_t * kalman_data_p)
+{
+	float K = 0;
+	float P = 0;
+	float H[2] = {0};
+	float HE = kalman_data_p->H.Encode_Heght;
+	float HG = kalman_data_p->H.Tuoluoyi_Heght;
+	float RG = kalman_data_p->R.R_Tuoluoyi;
+	float RE = kalman_data_p->R.R_Encode;
+	float E = *kalman_data_p->EG.Encode_measure;
+	float G = *kalman_data_p->EG.Tuoluoyi_measure;
+	float a = 0;
+	float b = 0;
+	float c = 0;
+	float d = 0;
+	float detA = 0;
+	float A[2][2] = {0};
+	float K2[2] = {0};
+	float X = 0;
+	H[0] = kalman_data_p->H.Encode_Heght;
+	H[1] = kalman_data_p->H.Tuoluoyi_Heght;
+	
+	*kalman_data_p->X = *kalman_data_p->X;  //´ýÍêÉÆ
+	X = *kalman_data_p->X;
+	kalman_data_p->P += kalman_data_p->Q;
+	P = kalman_data_p->P;
+	a = P * HE * HE + E * E;
+	b = P * HE *HG;
+	c = b;
+	d = P * HG * HG + G * G;
+	detA = a * d - b * c;
+	A[0][0] = d / detA;
+	A[0][1] = -b / detA;
+	A[1][0] = -c / detA;
+	A[1][1] = a / detA;
+	if(0 == AGV_status.runing_towards)
+	{
+		if(X < 180 && E  > 180)
+		{
+			E -= 360;
+		}
+		if(X > 180 && E < 180 )
+		{
+			E += 360;
+		}
+	}
+
+	switch(kalman_data_p->data_type)
+	{
+		case TUOLUOYI_DATA:
+			K = P * HG / (HG * P * HG + RG);
+			*kalman_data_p->X += K *(G - HG * X);
+			kalman_data_p->P -= K * HG * P;
+			break;
+		case ENCODE_DATA:
+			K = P * HE / (HE * P * HE + RE);
+			
+			*kalman_data_p->X += K *(E - HE * X);
+			kalman_data_p->P -= K * HE * P;
+			break;
+		case DEGREE_DATA:
+			K2[0] = P * (H[0] * A[0][0] + H[1] * A[1][0]);
+			K2[1] = P * (H[0] * A[0][1] + H[1] * A[1][1]);
+			*kalman_data_p->X += K2[0] * ( E - H[0] * X) + K2[1] * (G - H[1] * X);
+			kalman_data_p->P -= P * (K2[0] * H[0] + K2[1] * H[1]);
+			break;
+	
+	}
+	
+	if(*kalman_data_p->X > 360)
+	{
+		*kalman_data_p->X -= 360;
+	}
+	if(*kalman_data_p->X < 0)
+	{
+		*kalman_data_p->X += 360;
+	}
 	
 }
 

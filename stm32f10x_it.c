@@ -237,7 +237,32 @@ void SysTick_Handler(void)
 				}		
 				AGV_status.V_left  = cnt * PI * (D_MOTOR / 100.0) / CON_ENCODE_CNT / ACON_PID_CONTROL_TIME * 1000; //ÎÞ·½Ïò
 				AGV_status.encode_left_cnt = tmp;
-
+				
+				LEN_right = AGV_status.V_right * ACON_PID_CONTROL_TIME / 1000 * 100;
+				LEN_left = AGV_status.V_left * ACON_PID_CONTROL_TIME / 1000 * 100;
+				if(AGV_status.runing_status)
+				{
+					Encode_status.Degree += (LEN_left - LEN_right) / (PI * 2 * LEN_WHELLS) * 360;
+				}
+				else if(AGV_status.rotating_status && RIGHT  == AGV_status.AGV_control_p->data.rotating_data.rotating_towards)
+				{
+					Encode_status.Degree += (LEN_left + LEN_right) / (PI * 2 * LEN_WHELLS) * 360;
+				}
+				else if(AGV_status.rotating_status && LEFT  == AGV_status.AGV_control_p->data.rotating_data.rotating_towards)
+				{
+					Encode_status.Degree += (-LEN_left - LEN_right) / (PI * 2 * LEN_WHELLS) * 360;
+				}
+				
+				if(Encode_status.Degree < 0)
+				{
+					Encode_status.Degree += 360;
+				}
+				else if(Encode_status.Degree > 360)
+				{
+					Encode_status.Degree -= 360;
+				}
+				Kalman_process(&Encode_kalman_data);
+				
 				if(LEN_UPDATA_WRITING == AGV_status.updata_waitting_status)
 				{
 					LEN_right = AGV_status.V_right * ACON_PID_CONTROL_TIME / 1000 * 100;

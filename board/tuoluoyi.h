@@ -17,22 +17,18 @@ typedef struct {
 	float Xv;
 	float Yv;
 	float Zv;
-	float Xl;
-	float Yl;
-	float Zl;
 	float roll;
 	float pitch;
 	float yaw;
-	float Xl_pre;
-	float Yl_pre;
-	float yaw_pre;
 } tuoluoyi_info_t;
 
 
-typedef volatile struct {
+typedef  struct {
 	u8 zero_flag;    //标志零飘是否已计算
-	u8 clear_flag;   //标志陀螺仪数据是否被相机处理子程序清零
+	float Degree;			//陀螺仪积分出的小车姿态角
+	float Degree_kalman;			//陀螺仪卡尔曼滤波的小车姿态角
 } tuoluoyi_status_t;
+
 
 /* Exported constants --------------------------------------------------------*/
 
@@ -52,5 +48,6 @@ extern tuoluoyi_info_t  tuoluoyiinfo;
 
 /* Exported functions ------------------------------------------------------- */
 void tuoluoyi_process(void);
+void tuoluoyi_kalman_init(void);
 #endif //__TUOLUOIYI_H
 

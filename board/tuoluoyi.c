@@ -5,6 +5,7 @@ int Tuoluoyi_rx_sta = 0;
 u8  TUOLUOYI_RX_BUF[TUOLUOYI_BUF_LEN] = {0};
 tuoluoyi_info_t  tuoluoyiinfo = {0};
 tuoluoyi_status_t tuoluoyi_status = {0};
+kalman_data_t tuoluoyi_kalman_data = {0};
 
 static char err = 0;
 
@@ -77,7 +78,6 @@ static char data_analysis(char *data,tuoluoyi_data_t * tuoluoyidata_p)
 static void Tuoluoyi_data_tan(u8 * data, u8 st, u8 len)
 {
 	int i,i2;
-	u8 flag_old;
 
 	for(i = st; i < len + st; i++)
 	{
@@ -126,56 +126,19 @@ static void Tuoluoyi_data_tan(u8 * data, u8 st, u8 len)
 				else
 				{
 					data_analysis(tmp,&tuoluoyidata);
-					
-					flag_old = tuoluoyi_status.clear_flag;
-					
-				//	tuoluoyiinfo.Xv += tuoluoyidata.Xacc * T;
-				//	tuoluoyiinfo.Yv += tuoluoyidata.Yacc * T;
-				//	tuoluoyiinfo.Zv += tuoluoyidata.Zacc * T;
-					
-					//tuoluoyiinfo.Xl += tuoluoyiinfo.Xv * T + 0.5 * tuoluoyidata.Xacc * T * T;
-				//	tuoluoyiinfo.Yl += tuoluoyiinfo.Yv * T + 0.5 * tuoluoyidata.Yacc * T * T;
-				//	tuoluoyiinfo.Zl += tuoluoyiinfo.Zv * T + 0.5 * tuoluoyidata.Zacc * T * T;
-					
-					tuoluoyiinfo.roll += tuoluoyidata.RollRate * T * 180 / PI;
-					tuoluoyiinfo.pitch += tuoluoyidata.PitchRate * T * 180 / PI;
 					tuoluoyiinfo.yaw += tuoluoyidata.YawRate * T * 180 / PI;
-					
-					if(flag_old != tuoluoyi_status.clear_flag){
-						memset(&tuoluoyiinfo,0,sizeof(tuoluoyiinfo));
-						__disable_irq();
-						tuoluoyi_status.clear_flag = 0;
-						__enable_irq();
-					}
-					else
+					tuoluoyi_status.Degree -= tuoluoyiinfo.yaw;
+					if(tuoluoyi_status.Degree < 0)
 					{
-						__disable_irq();
-			//			AGV_status.X_location += (tuoluoyiinfo.Xl  - tuoluoyiinfo.Xl_pre) * 100;
-			//		AGV_status.Y_location += (tuoluoyiinfo.Yl - tuoluoyiinfo.Yl_pre) * 100;
-			//		AGV_status.X_offset   += (tuoluoyiinfo.Xl  - tuoluoyiinfo.Xl_pre) * 100;
-			//		AGV_status.Y_offset   += (tuoluoyiinfo.Yl - tuoluoyiinfo.Yl_pre) * 100;
-						AGV_status.Directon   -= tuoluoyiinfo.yaw - tuoluoyiinfo.yaw_pre;
-						
-						if(AGV_status.Directon >= 360)
-						{
-							AGV_status.Directon -= 360;
-						}
-						else if(AGV_status.Directon  < 0)
-						{
-							AGV_status.Directon += 360;
-						}
-						
-				//		tuoluoyiinfo.Xl_pre = tuoluoyiinfo.Xl;
-				//		tuoluoyiinfo.Yl_pre = tuoluoyiinfo.Yl;
-						tuoluoyiinfo.yaw_pre = tuoluoyiinfo.yaw;
-						
-						__enable_irq();
+						tuoluoyi_status.Degree += 360;
 					}
-					
-					
+					else if(tuoluoyi_status.Degree > 360)
+					{
+						tuoluoyi_status.Degree -= 360;
+					}
 				}
- 
 				index = 0;
+				Kalman_process(&tuoluoyi_kalman_data);
 			}
 		}
 		else{
@@ -217,3 +180,18 @@ void tuoluoyi_process(void)
 			}
 		}
 }
+
+
+void tuoluoyi_kalman_init(void)
+{
+	tuoluoyi_kalman_data.data_type = TUOLUOYI_DATA;
+	tuoluoyi_kalman_data.P = 0.001;
+	tuoluoyi_kalman_data.H.Tuoluoyi_Heght = 1;
+	tuoluoyi_kalman_data.Q = GMNSTD * GMNSTD;
+	tuoluoyi_kalman_data.R.R_Tuoluoyi = GMNSTD * GMNSTD;
+	tuoluoyi_kalman_data.V.V_Tuoluoyi = GMNSTD;
+	tuoluoyi_kalman_data.X = &tuoluoyi_status.Degree_kalman;
+	tuoluoyi_kalman_data.EG.Tuoluoyi_measure = &tuoluoyi_status.Degree;
+	
+}
+

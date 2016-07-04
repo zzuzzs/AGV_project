@@ -33,14 +33,19 @@ typedef volatile struct {
 	u8 runbutton_status;    //标志行驶按钮状态
 	u8 suspendbutton_status;    //标志暂停按钮状态
 	u8 rotating_status;				//标志是否处于回转状态
-	
 	u8 runing_status;				//标志是否处于直行状态
+	
 	u8 up_down_status;      // 标志托盘状态
 	u8 updata_waitting_status; //标志前台程序是否等待后台程序（中断）更新小车状态数据
 	u8 init_Directon_flag;
+	u8 encode_data_available;
+	u8 control_req;
 	u16 runing_towards;    //小车设定航向,即与X轴正向顺时针夹角 0,90,180,270.地面坐标系
-	u16 encode_right_cnt;
-	u16 encode_left_cnt;
+	u16 encode_right_cnt_pre;
+	u16 encode_left_cnt_pre;
+	u16 encode_right_cnt_now;
+	u16 encode_left_cnt_now;
+	
 	float V_right;			//小车右轮速度测量值 单位m/s
 	float V_left;				//小车左轮速度测量值 单位m/s
 	float X_location;   //小车X轴方向的实际位置，单位cm，地面坐标系
@@ -164,5 +169,6 @@ void status_printf(AGV_status_t *p);
 void Encode_kalman_init(void);
 void Degree_kalman_init(void);
 void Kalman_process(kalman_data_t * kalman_data_p);
+void usart_sent(const char *p);
 #endif  /*__PUBLIC_H*/
 

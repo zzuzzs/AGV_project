@@ -26,7 +26,7 @@
 #include "string.h"
 #include "tuoluoyi.h" 
 #include "camera.h"
-#include "motor.h"
+#include "agv.h"
 #include "public.h"
 #include "board.h"
 #include "includes.h"
@@ -192,102 +192,26 @@ void USART3_IRQHandler(void)
 
 void SysTick_Handler(void)
 {
-	int tmp = 0,cnt = 0;
-	float LEN_right = 0,LEN_left = 0;
 	systick++;
 	
 	if(systick % ACON_PID_CONTROL_TIME == 0)
 	{
-		if(AGV_status.AGV_control_p != NULL)
+		AGV_status.encode_left_cnt_pre = AGV_status.encode_left_cnt_now;
+		AGV_status.encode_right_cnt_pre = AGV_status.encode_right_cnt_now;
+		AGV_status.encode_left_cnt_now = CON_ENCODE_LEFT->CNT;
+		AGV_status.encode_right_cnt_now = CON_ENCODE_RIGHT->CNT;
+		#ifdef DEBUG
+		if(AGV_status.encode_data_available || AGV_status.control_req)
 		{
-			if(AGV_status.runing_status || AGV_status.rotating_status)
+			GPIO_SetBits(GPIOA,MCUKEY1);
+			while(1)
 			{
-				
-				#ifdef DEBUG
-				if(AGV_status.runing_status && AGV_status.rotating_status)   //状态冲突检测
-				{
-					while(1);
-				}
-				#endif  //DEBUG
-				
-				
-				tmp = CON_ENCODE_RIGHT->CNT;
-				cnt = (tmp - AGV_status.encode_right_cnt + ACON_TIM_CONT) % ACON_TIM_CONT;
-				if(AGV_status.rotating_status && RIGHT  == AGV_status.AGV_control_p->data.rotating_data.rotating_towards)
-				{
-					cnt = ACON_TIM_CONT - cnt;
-				}
-				if(cnt > ACON_TIM_CONT / 2)
-					{
-						cnt = 0;
-					}
-				AGV_status.V_right  = cnt * PI * (D_MOTOR / 100.0) / CON_ENCODE_CNT / ACON_PID_CONTROL_TIME * 1000;    //无方向 
-				AGV_status.encode_right_cnt = tmp;
-				
-				
-				tmp = CON_ENCODE_LEFT->CNT;
-				cnt = (tmp - AGV_status.encode_left_cnt + ACON_TIM_CONT) % ACON_TIM_CONT;
-				if(AGV_status.rotating_status && LEFT  == AGV_status.AGV_control_p->data.rotating_data.rotating_towards)
-				{
-					cnt = ACON_TIM_CONT - cnt;
-				}
-				if(cnt > ACON_TIM_CONT / 2)
-				{
-					cnt = 0;
-				}		
-				AGV_status.V_left  = cnt * PI * (D_MOTOR / 100.0) / CON_ENCODE_CNT / ACON_PID_CONTROL_TIME * 1000; //无方向
-				AGV_status.encode_left_cnt = tmp;
-				
-				LEN_right = AGV_status.V_right * ACON_PID_CONTROL_TIME / 1000 * 100;
-				LEN_left = AGV_status.V_left * ACON_PID_CONTROL_TIME / 1000 * 100;
-				if(AGV_status.runing_status)
-				{
-					Encode_status.Degree += (LEN_left - LEN_right) / (PI * 2 * LEN_WHELLS) * 360;
-				}
-				else if(AGV_status.rotating_status && RIGHT  == AGV_status.AGV_control_p->data.rotating_data.rotating_towards)
-				{
-					Encode_status.Degree += (LEN_left + LEN_right) / (PI * 2 * LEN_WHELLS) * 360;
-				}
-				else if(AGV_status.rotating_status && LEFT  == AGV_status.AGV_control_p->data.rotating_data.rotating_towards)
-				{
-					Encode_status.Degree += (-LEN_left - LEN_right) / (PI * 2 * LEN_WHELLS) * 360;
-				}
-				
-				if(Encode_status.Degree < 0)
-				{
-					Encode_status.Degree += 360;
-				}
-				else if(Encode_status.Degree > 360)
-				{
-					Encode_status.Degree -= 360;
-				}
-				Kalman_process(&Encode_kalman_data);
-				
-				if(LEN_UPDATA_WRITING == AGV_status.updata_waitting_status)
-				{
-					LEN_right = AGV_status.V_right * ACON_PID_CONTROL_TIME / 1000 * 100;
-					LEN_left = AGV_status.V_left * ACON_PID_CONTROL_TIME / 1000 * 100;
-					switch(AGV_status.runing_towards)
-					{
-						case 0:
-							AGV_status.X_location += (LEN_right + LEN_left) / 2;
-						break;
-						case 90:
-							AGV_status.Y_location += (LEN_right + LEN_left) / 2;
-						break;
-						case 180:
-							AGV_status.X_location -= (LEN_right + LEN_left) / 2;
-						break;
-						case 270:
-							AGV_status.Y_location -= (LEN_right + LEN_left) / 2;
-						break;
-					}
-
-				}
-				
+				usart_sent("error#1\n");
 			}
-			AGV_control();
 		}
+		#endif
+		AGV_status.control_req = 1;
+		AGV_status.encode_data_available = 1;
 	}
 }
 

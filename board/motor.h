@@ -2,8 +2,8 @@
 #define __MOTOR_H
 #include "public.h"
 
-#define  NOMBER_OF_TURNS_PRE_VOLTAGE_PRE_SECODE 0.2926   //外部调速电压与转速之间的系数:当驱动电压为1v时，电机每秒钟的转数
 
+/* Exported types ------------------------------------------------------------*/
 enum WHICH_MOTOR {
 	LEFT_MOTOR = 1,
 	RIGHT_MOTOR,
@@ -26,16 +26,15 @@ enum AGV_UPDATA_STATUS{
 	LEN_UPDATA_WRITING = 2,
 };
 
+/* Exported constants --------------------------------------------------------*/
+#define  NOMBER_OF_TURNS_PRE_VOLTAGE_PRE_SECODE 0.2926   //外部调速电压与转速之间的系数:当驱动电压为1v时，电机每秒钟的转数
 
+/* Exported macro ------------------------------------------------------------*/
 
-
-//void AGV_control(AGV_control_t * AGV_control_data_p);
-void AGV_control(void);
-
-void AGV_run(void);
+/* Exported functions ------------------------------------------------------- */
 void motor_speed_set(u8 WHICH_MOTOR,float Speed);
-void AGV_stop(void);
-void AGV_V_set(float speed);
-void AGV_pre_set(void);
+void motor_run(u8 WHICH_MOTOR,u8 CW_CCW);
+void motor_stop(u8 WHICH_MOTOR);
+
 
 #endif //__MOTOR_H

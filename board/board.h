@@ -129,18 +129,6 @@
 
 #define  V_REF 5   //DAC ²Î¿¼µçÑ¹
 
-#ifdef CON_TUOLUOYI_USART1 
-#define TUOLUOYI_IRQ USART1_IRQn
-#elif defined(CON_TUOLUOYI_USART2)
-#define TUOLUOYI_IRQ USART2_IRQn
-#endif
-
-#ifdef CON_CAMERA_USART1
-#define CAMERA_IRQ USART1_IRQn
-#elif defined(CON_CAMERA_USART2)
-#define CAMERA_IRQ USART2_IRQn
-#endif
-
 void boardinit(void);
 
 #endif //__BOARD_H 

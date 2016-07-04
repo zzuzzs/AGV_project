@@ -4,7 +4,7 @@
 #include "public.h"
 #include "camera.h"
 #include "tuoluoyi.h"
-#include "motor.h"
+#include "agv.h"
 #include "flash.h"
 
 int main(void)
@@ -66,8 +66,9 @@ TUOLUOYI_PROCESS:
 								camera_process();
 								tuoluoyi_process();
 	
-								if(systick % 20 == 5)
+								if(AGV_status.control_req)
 								{
+									 AGV_control();
 									status_printf(&AGV_status);
 								}
 						//	if(!AGV_status.runbutton_status)

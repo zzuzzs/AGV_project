@@ -16,7 +16,7 @@ int main(void)
 	PID_run_init();
 	PID_rotate_init();
 	AGV_control_data_init();
-	__enable_irq();
+	
 
 	sFLASH_ReadBuffer(&ResetTest,ResetTest_ADDR,1);
 
@@ -25,7 +25,7 @@ int main(void)
 		sFLASH_Reset();
 		sFLASH_WriteBuffer(&Reset_Flag,ResetTest_ADDR,1);
 	}
-
+	__enable_irq();
 	AGV_status.runbutton_status = 1;
 	while(1)
 	{
@@ -69,7 +69,7 @@ TUOLUOYI_PROCESS:
 								if(AGV_status.control_req)
 								{
 									 AGV_control();
-									status_printf(&AGV_status);
+								//	status_printf(&AGV_status);
 								}
 						//	if(!AGV_status.runbutton_status)
 							//	break;

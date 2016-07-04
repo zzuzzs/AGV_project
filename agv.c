@@ -276,9 +276,10 @@ void AGV_control(void)
 			}
 		
 	}
-	
+	__disable_irq();
 	AGV_status.control_req = 0;
 	AGV_status.encode_data_available = 0;
+	__enable_irq();
 }
 
 void AGV_V_set(float speed)

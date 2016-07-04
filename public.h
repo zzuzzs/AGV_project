@@ -85,8 +85,8 @@ typedef struct {
 		}	EG;
 	float P;
 	struct{
-		float Encode_Heght;
-		float Tuoluoyi_Heght;
+		float Encode_Weight;
+		float Tuoluoyi_Weight;
 	}H;
 	float Q;
 	struct{

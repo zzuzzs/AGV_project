@@ -114,12 +114,12 @@ void Degree_kalman_init(void)
 	Degree_kalman_data.EG.Encode_measure = &Encode_status.Degree_kalman;
 	Degree_kalman_data.EG.Tuoluoyi_measure = &tuoluoyi_status.Degree_kalman;
 	Degree_kalman_data.X = &AGV_status.Directon;
-	Degree_kalman_data.H.Encode_Heght = 1;
-	Degree_kalman_data.H.Tuoluoyi_Heght = 1;
+	Degree_kalman_data.H.Encode_Weight = 1;
+	Degree_kalman_data.H.Tuoluoyi_Weight = 1;
 	Degree_kalman_data.P = 0.001;
 	Degree_kalman_data.Q = PNSTD * PNSTD;
-	Degree_kalman_data.R.R_Encode = EMNSTD * EMNSTD;
-	Degree_kalman_data.R.R_Tuoluoyi  = GMNSTD * GMNSTD;
+	Degree_kalman_data.R.R_Encode = RA_ENCO * RA_ENCO;
+	Degree_kalman_data.R.R_Tuoluoyi  = RA_GYRO * RA_GYRO;
 	Degree_kalman_data.V.V_Encode  = EMNSTD * EMNSTD;
 	Degree_kalman_data.V.V_Tuoluoyi = GMNSTD * GMNSTD;
 }
@@ -130,8 +130,8 @@ void Kalman_process(kalman_data_t * kalman_data_p)
 	float K = 0;
 	float P = 0;
 	float H[2] = {0};
-	float HE = kalman_data_p->H.Encode_Heght;
-	float HG = kalman_data_p->H.Tuoluoyi_Heght;
+	float WE = kalman_data_p->H.Encode_Weight;
+	float WG = kalman_data_p->H.Tuoluoyi_Weight;
 	float RG = kalman_data_p->R.R_Tuoluoyi;
 	float RE = kalman_data_p->R.R_Encode;
 	float E = *kalman_data_p->EG.Encode_measure;
@@ -144,22 +144,14 @@ void Kalman_process(kalman_data_t * kalman_data_p)
 	float A[2][2] = {0};
 	float K2[2] = {0};
 	float X = 0;
-	H[0] = kalman_data_p->H.Encode_Heght;
-	H[1] = kalman_data_p->H.Tuoluoyi_Heght;
+	H[0] = kalman_data_p->H.Encode_Weight;
+	H[1] = kalman_data_p->H.Tuoluoyi_Weight;
 	
 	*kalman_data_p->X = *kalman_data_p->X;  //´ýÍêÉÆ
 	X = *kalman_data_p->X;
 	kalman_data_p->P += kalman_data_p->Q;
 	P = kalman_data_p->P;
-	a = P * HE * HE + E * E;
-	b = P * HE *HG;
-	c = b;
-	d = P * HG * HG + G * G;
-	detA = a * d - b * c;
-	A[0][0] = d / detA;
-	A[0][1] = -b / detA;
-	A[1][0] = -c / detA;
-	A[1][1] = a / detA;
+	
 	if(0 == AGV_status.runing_towards)
 	{
 		if(X < 180 && E  > 180)
@@ -175,17 +167,26 @@ void Kalman_process(kalman_data_t * kalman_data_p)
 	switch(kalman_data_p->data_type)
 	{
 		case TUOLUOYI_DATA:
-			K = P * HG / (HG * P * HG + RG);
-			*kalman_data_p->X += K *(G - HG * X);
-			kalman_data_p->P -= K * HG * P;
+			K = P * WG / (WG * P * WG + RG);
+			*kalman_data_p->X += K *(G - WG * X);
+			kalman_data_p->P -= K * WG * P;
 			break;
 		case ENCODE_DATA:
-			K = P * HE / (HE * P * HE + RE);
+			K = P * WE / (WE * P * WE + RE);
 			
-			*kalman_data_p->X += K *(E - HE * X);
-			kalman_data_p->P -= K * HE * P;
+			*kalman_data_p->X += K *(E - WE * X);
+			kalman_data_p->P -= K * WE * P;
 			break;
 		case DEGREE_DATA:
+			a = P * WE * WE + RE;
+			b = P * WE *WG;
+			c = b;
+			d = P * WG * WG + RG;
+			detA = a * d - b * c;
+			A[0][0] = d / detA;
+			A[0][1] = -c / detA;
+			A[1][0] = -b / detA;
+			A[1][1] = a / detA;
 			K2[0] = P * (H[0] * A[0][0] + H[1] * A[1][0]);
 			K2[1] = P * (H[0] * A[0][1] + H[1] * A[1][1]);
 			*kalman_data_p->X += K2[0] * ( E - H[0] * X) + K2[1] * (G - H[1] * X);

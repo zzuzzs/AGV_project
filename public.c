@@ -20,7 +20,7 @@ AGV_control_t AGV_control_data_8 = {0};
 
 
 PID_data_t PID_data_run = {0};
-PID_data_t PID_data_rotate = {0};
+PID_data_t PID_data_V = {0};
 
 u32 systick = 0;
 kalman_data_t Encode_kalman_data = {0};
@@ -98,7 +98,7 @@ void Encode_kalman_init(void)
 {
 	Encode_kalman_data.data_type = ENCODE_DATA ;
 	Encode_kalman_data.P = 0.001;
-	Encode_kalman_data.H.Encode_Heght = 1;
+	Encode_kalman_data.H.Encode_Weight = 1;
 	Encode_kalman_data.Q = EMNSTD * EMNSTD;
 	Encode_kalman_data.R.R_Encode = EMNSTD * EMNSTD;
 	Encode_kalman_data.V.V_Encode = EMNSTD;
@@ -113,7 +113,7 @@ void Degree_kalman_init(void)
 	Degree_kalman_data.data_type = DEGREE_DATA;
 	Degree_kalman_data.EG.Encode_measure = &Encode_status.Degree_kalman;
 	Degree_kalman_data.EG.Tuoluoyi_measure = &tuoluoyi_status.Degree_kalman;
-	Degree_kalman_data.X = &AGV_status.Directon;
+	Degree_kalman_data.X = &AGV_status.Direction;
 	Degree_kalman_data.H.Encode_Weight = 1;
 	Degree_kalman_data.H.Tuoluoyi_Weight = 1;
 	Degree_kalman_data.P = 0.001;
@@ -173,7 +173,6 @@ void Kalman_process(kalman_data_t * kalman_data_p)
 			break;
 		case ENCODE_DATA:
 			K = P * WE / (WE * P * WE + RE);
-			
 			*kalman_data_p->X += K *(E - WE * X);
 			kalman_data_p->P -= K * WE * P;
 			break;
@@ -240,26 +239,26 @@ void TUOLUOYI_IRQ_Set(FunctionalState status)
   NVIC_Init(&NVIC_InitStructure);
 }
 
-void PID_run_init()
+void PID_run_data_init()
 {
 	PID_data_run.Kp = PID_RUN_KP;
 	PID_data_run.Ti = PID_RUN_TI;
-
+	PID_data_run.Td = PID_RUN_TD;
 	PID_data_run.err_now = 0;
 	PID_data_run.err_pre_1 = 0;
-	//PID_data_run.err_pre_2 = 0;
+	PID_data_run.err_pre_2 = 0;
 
 }
 
 
-void PID_rotate_init()
+void PID_V_data_init()
 {
-	PID_data_rotate.Kp = PID_RUN_KP;
-	PID_data_rotate.Ti = PID_RUN_TI;
-
-	PID_data_rotate.err_now = 0;
-	PID_data_rotate.err_pre_1 = 0;
-	//PID_data_rotate.err_pre_2 = 0;
+	PID_data_V.Kp = PID_V_KP;
+	PID_data_V.Ti = PID_V_TI;
+	PID_data_V.Td = PID_V_TD;
+	PID_data_V.err_now = 0;
+	PID_data_V.err_pre_1 = 0;
+	PID_data_V.err_pre_2 = 0;
 
 }
 
@@ -267,22 +266,12 @@ void PID_rotate_init()
 float  PID_process(PID_data_t * PID_data_p)
 {
 	float tmp = 0;
-	tmp = PID_data_p->Kp * PID_data_p->err_now;//(PID_data_p->err_now - PID_data_p->err_pre_1)  +  \
-				PID_data_p->Kp * (ACON_PID_CONTROL_TIME / 1000) * PID_data_p->err_now / PID_data_p->Ti;  // +   \
-				PID_data_p->Kd * ACON_PID_CONTROL_RATE * (PID_data_p->err_now + PID_data_p->err_pre_2 - 2 * PID_data_p->err_pre_1);
-	
-	PID_data_p->err_pre_1 = PID_data_p->err_now;
-	//PID_data_p->err_pre_2 = PID_data_p->err_pre_1;
-	return tmp;
-}
-
-float PID_process_tmp(PID_data_t * PID_data_p)
-{
-	float tmp = 0;
 	tmp = PID_data_p->Kp * (PID_data_p->err_now - PID_data_p->err_pre_1)  +  \
-				PID_data_p->Kp * (ACON_PID_CONTROL_TIME / 1000) * PID_data_p->err_now / PID_data_p->Ti; 
+				PID_data_p->Kp * (ACON_PID_CONTROL_TIME / 1000.0) * PID_data_p->err_now / PID_data_p->Ti +   \
+				PID_data_p->Kp * PID_data_p->Td * ACON_PID_CONTROL_RATE * (PID_data_p->err_now + PID_data_p->err_pre_2 - 2 * PID_data_p->err_pre_1);
 	
 	PID_data_p->err_pre_1 = PID_data_p->err_now;
+	PID_data_p->err_pre_2 = PID_data_p->err_pre_1;
 	return tmp;
 }
 
@@ -355,9 +344,8 @@ void status_printf(AGV_status_t *p)
 	
 	sprintf(tmp,"I%f\n",tuoluoyiinfo.yaw);
 	usart_sent(tmp);
-	
 	*/
-	sprintf(tmp,"G%f\n",p->Directon);
+	sprintf(tmp,"G%f\n",p->Direction);
 	usart_sent(tmp);
 
 	sprintf(tmp,"J%d\n",p->runing_towards);

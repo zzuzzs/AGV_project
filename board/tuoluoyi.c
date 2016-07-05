@@ -186,7 +186,7 @@ void tuoluoyi_kalman_init(void)
 {
 	tuoluoyi_kalman_data.data_type = TUOLUOYI_DATA;
 	tuoluoyi_kalman_data.P = 0.001;
-	tuoluoyi_kalman_data.H.Tuoluoyi_Heght = 1;
+	tuoluoyi_kalman_data.H.Tuoluoyi_Weight = 1;
 	tuoluoyi_kalman_data.Q = GMNSTD * GMNSTD;
 	tuoluoyi_kalman_data.R.R_Tuoluoyi = GMNSTD * GMNSTD;
 	tuoluoyi_kalman_data.V.V_Tuoluoyi = GMNSTD;

@@ -38,21 +38,23 @@ typedef volatile struct {
 	u8 up_down_status;      // 标志托盘状态
 	u8 updata_waitting_status; //标志前台程序是否等待后台程序（中断）更新小车状态数据
 	u8 init_Directon_flag;
-	u8 encode_data_available;
 	u8 control_req;
+
+	u8 control_st_flag;
+
 	u16 runing_towards;    //小车设定航向,即与X轴正向顺时针夹角 0,90,180,270.地面坐标系
-	u16 encode_right_cnt_pre;
-	u16 encode_left_cnt_pre;
-	u16 encode_right_cnt_now;
-	u16 encode_left_cnt_now;
+	u16 encode_left_cnt;
+	u16 encode_right_cnt;
+
 	
 	float V_right;			//小车右轮速度测量值 单位m/s
 	float V_left;				//小车左轮速度测量值 单位m/s
+	float V_Set;				//小车设定速度  单位m/s
 	float X_location;   //小车X轴方向的实际位置，单位cm，地面坐标系
 	float Y_location;		//小车Y轴方向的实际位置，单位cm，地面坐标系
 	float X_offset;			//相机X轴方向相对于二维码的位置，左负右正.单位cm，小车坐标系 :小车正前方为Y轴正向，右侧为X轴正向
 	float Y_offset;			//相机Y轴方向相对于二维码的位置，单位cm，小车坐标系
-	float Directon;			//小车行进方向与X轴正向实际夹角，单位度。地面坐标系
+	float Direction;			//小车行进方向与X轴正向实际夹角，单位度。地面坐标系
 	float right_Voltage;  //单位 V
   float left_Voltage;		//单位 V
 	AGV_control_t *AGV_control_p;
@@ -68,17 +70,16 @@ typedef struct{
 typedef struct {
 	float Kp;
 	float Ti;
-	//float Ki;
-	//float Kd;
+	float Td;
 	float err_now;
 	float err_pre_1;
-//	float err_pre_2;
+	float err_pre_2;
 		
 } PID_data_t;
 
 typedef struct {
 	u8 data_type;
-	float * X;
+	volatile float * X;
 	struct {
 		float *Encode_measure;
 		float *Tuoluoyi_measure;
@@ -126,9 +127,11 @@ enum kalman_type{
 /* Exported macro ------------------------------------------------------------*/
 #define PID_RUN_KP  ACON_PID_RUN_KP
 #define PID_RUN_TI  ACON_PID_RUN_TI
+#define PID_RUN_TD  ACON_PID_RUN_TD
 
-#define PID_ROTATE_KP 	ACON_PID_ROTATE_KP		
-#define PID_ROTATE_TI		ACON_PID_ROTATE_TI
+#define PID_V_KP 		ACON_PID_V_KP		
+#define PID_V_TI		ACON_PID_V_TI
+#define PID_V_TD		ACON_PID_V_TD
 
 /* Exported variable --------------------------------------------------------*/
 
@@ -145,7 +148,7 @@ extern AGV_control_t AGV_control_data_8;
 
 
 extern PID_data_t PID_data_run;
-extern PID_data_t PID_data_rotate;
+extern PID_data_t PID_data_V;
 extern kalman_data_t Encode_kalman_data;
 extern Encode_status_t Encode_status;
 extern kalman_data_t Degree_kalman_data;
@@ -160,10 +163,9 @@ void START_BUTTON_IRQ_Set(FunctionalState status);
 void TUOLUOYI_IRQ_Set(FunctionalState status);
 void CAMERA_IRQ_Set(FunctionalState status);
 void AGV_control_data_init(void);
-void PID_run_init(void);
-void PID_rotate_init(void);
+void PID_run_data_init(void);
+void PID_V_data_init(void);
 float PID_process(PID_data_t * PID_data_p);
-float PID_process_tmp(PID_data_t * PID_data_p);
 void command_process(void);
 void status_printf(AGV_status_t *p);
 void Encode_kalman_init(void);

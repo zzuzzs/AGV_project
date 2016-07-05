@@ -108,7 +108,7 @@ END:
 
 static void  camera_data_analysis(char * data)
 {
-	float Directon = 0;
+	float Direction = 0;
 	cameradata.number = numberdata_analysis(data);
 	cameradata.x =  XYdata_analysis(data + 5);
 	cameradata.y =  XYdata_analysis(data + 12);
@@ -124,37 +124,37 @@ static void  camera_data_analysis(char * data)
 			case 0:
 				AGV_status.X_location  = (cameradata.number / 100) * ACON_LEN_QR + AGV_status.Y_offset - LEN_CAMERA_TO_CENTRE;
 				AGV_status.Y_location  = (cameradata.number % 100) * ACON_LEN_QR + AGV_status.X_offset;
-				Directon =  cameradata.O > 0 ? 180 - cameradata.O : -(cameradata.O + 180);
+				Direction =  cameradata.O > 0 ? 180 - cameradata.O : -(cameradata.O + 180);
 				break;
 			case 90:
 				AGV_status.X_location  = (cameradata.number / 100) * ACON_LEN_QR - AGV_status.X_offset;
 				AGV_status.Y_location  = (cameradata.number % 100) * ACON_LEN_QR + AGV_status.Y_offset - LEN_CAMERA_TO_CENTRE;
-				Directon = 180 - cameradata.O;
+				Direction = 180 - cameradata.O;
 			break;
 			case 180:
 				AGV_status.X_location  = (cameradata.number / 100) * ACON_LEN_QR - AGV_status.Y_offset + LEN_CAMERA_TO_CENTRE;
 				AGV_status.Y_location  = (cameradata.number % 100) * ACON_LEN_QR - AGV_status.X_offset;
-				Directon =  180 - cameradata.O;
+				Direction =  180 - cameradata.O;
 			break;
 			case 270:
 				AGV_status.X_location  = (cameradata.number / 100) * ACON_LEN_QR + AGV_status.X_offset;
 				AGV_status.Y_location  = (cameradata.number % 100) * ACON_LEN_QR - AGV_status.Y_offset + LEN_CAMERA_TO_CENTRE;
-				Directon =  180 - cameradata.O;
+				Direction =  180 - cameradata.O;
 			break;
 		}
 		
-		if((Directon - AGV_status.Directon < 2.63 && Directon - AGV_status.Directon > -2.63) || !camera_status.init_flag)
-		{
-			AGV_status.Directon = Directon;
+		//if((Direction - AGV_status.Direction < 2.63 && Direction - AGV_status.Direction > -2.63) || !camera_status.init_flag)
+	//	{
+			AGV_status.Direction = Direction;
 			
-			if(AGV_status.init_Directon_flag)
-			{
-				tuoluoyi_status.Degree = AGV_status.Directon;
-				Encode_status.Degree = AGV_status.Directon;
-				PID_data_run.err_pre_1 = 0;
-				PID_data_run.err_now = 0;
-			}
-		}
+	//		if(AGV_status.init_Directon_flag)
+	//		{
+				//tuoluoyi_status.Degree = AGV_status.Direction;
+				//Encode_status.Degree = AGV_status.Direction;
+			//	PID_data_run.err_pre_1 = 0;
+			//	PID_data_run.err_now = 0;
+	//		}
+	//	}
 		__enable_irq();
 	}
 	camera_status.init_flag = 1; 

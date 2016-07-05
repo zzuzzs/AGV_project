@@ -13,9 +13,12 @@ int main(void)
 	u8 ResetTest,Reset_Flag = 0x55;
 	__disable_irq();
 	boardinit();
-	PID_run_init();
-	PID_rotate_init();
+	PID_run_data_init();
+	PID_V_data_init();
 	AGV_control_data_init();
+	tuoluoyi_kalman_init();
+	Encode_kalman_init();
+	Degree_kalman_init();
 	
 
 	sFLASH_ReadBuffer(&ResetTest,ResetTest_ADDR,1);
@@ -58,8 +61,9 @@ TUOLUOYI_PROCESS:
 						//开其他后台任务
 						CAMERA_IRQ_Set(ENABLE);
 						//开前台任务
-						AGV_V_set(ACON_V_INIT);	
+						AGV_V_set(ACON_RUN_SPEED);	
 						AGV_status.AGV_control_p = &AGV_control_data_8;
+						AGV_status.control_st_flag = 1;
 						while(1)
 						{
 						
@@ -69,8 +73,9 @@ TUOLUOYI_PROCESS:
 								if(AGV_status.control_req)
 								{
 									 AGV_control();
-								//	status_printf(&AGV_status);
+									
 								}
+								status_printf(&AGV_status);
 						//	if(!AGV_status.runbutton_status)
 							//	break;
 							

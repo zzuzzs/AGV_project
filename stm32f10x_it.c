@@ -196,22 +196,23 @@ void SysTick_Handler(void)
 	
 	if(systick % ACON_PID_CONTROL_TIME == 0)
 	{
-		AGV_status.encode_left_cnt_pre = AGV_status.encode_left_cnt_now;
-		AGV_status.encode_right_cnt_pre = AGV_status.encode_right_cnt_now;
-		AGV_status.encode_left_cnt_now = CON_ENCODE_LEFT->CNT;
-		AGV_status.encode_right_cnt_now = CON_ENCODE_RIGHT->CNT;
-		#ifdef DEBUG
-		if(AGV_status.encode_data_available || AGV_status.control_req)
+		
+		if(AGV_status.control_st_flag)
 		{
-			GPIO_SetBits(GPIOA,MCUKEY1);
-			while(1)
+			#ifdef DEBUG
+			if(AGV_status.control_req)
 			{
-				usart_sent("error#1\n");
+				GPIO_SetBits(GPIOA,MCU_LED1);
+				while(1)
+				{
+					usart_sent("error#1\n");
+				}
 			}
+			#endif
+			AGV_status.control_req = 1;
+	
 		}
-		#endif
-		AGV_status.control_req = 1;
-		AGV_status.encode_data_available = 1;
+
 	}
 }
 

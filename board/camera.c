@@ -124,7 +124,7 @@ static void  camera_data_analysis(char * data)
 			case 0:
 				AGV_status.X_location  = (cameradata.number / 100) * ACON_LEN_QR + AGV_status.Y_offset - LEN_CAMERA_TO_CENTRE;
 				AGV_status.Y_location  = (cameradata.number % 100) * ACON_LEN_QR + AGV_status.X_offset;
-				Direction =  cameradata.O > 0 ? 180 - cameradata.O : -(cameradata.O + 180);
+				Direction =  cameradata.O > 0 ? 180 - cameradata.O : -(cameradata.O - 180);
 				break;
 			case 90:
 				AGV_status.X_location  = (cameradata.number / 100) * ACON_LEN_QR - AGV_status.X_offset;

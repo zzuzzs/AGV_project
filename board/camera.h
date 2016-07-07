@@ -22,9 +22,9 @@ typedef volatile struct {
 
 #define CAMERA_BUF_LEN  			200	//定义最大接收字节数 200
 #define CAMERA_PAKLEN  27
-#define LEN_PER_PIC     0.2451  //画面每一像素代表的实际距离,单位 mm
-#define PIC_CENTRE_X        240     //二维码在图像正中心时的X坐标
-#define PIC_CENTRE_Y        376		  //二维码在图像正中心时的Y坐标
+#define LEN_PER_PIC     0.2573  //画面每一像素代表的实际距离,单位 mm
+#define PIC_CENTRE_X        372     //二维码在图像正中心时的X坐标
+#define PIC_CENTRE_Y       	232	  //二维码在图像正中心时的Y坐标
 
 /* Exported macro ------------------------------------------------------------*/
 

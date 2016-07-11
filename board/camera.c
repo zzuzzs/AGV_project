@@ -1,5 +1,5 @@
 #include "camera.h"
-#include "tuoluoyi.h"
+#include "gyro.h"
 #include "string.h"
 
 
@@ -113,50 +113,48 @@ static void  camera_data_analysis(char * data)
 	cameradata.x =  XYdata_analysis(data + 5);
 	cameradata.y =  XYdata_analysis(data + 12);
 	cameradata.O = Odata_analysis(data + 19);
-	if(cameradata.number != camera_status.number || !AGV_status.init_Directon_flag)
+	
+//	__disable_irq();
+	AGV_status.X_offset = (cameradata.x - PIC_CENTRE_X) * LEN_PER_PIC / 10;
+	AGV_status.Y_offset = (PIC_CENTRE_Y - cameradata.y) * LEN_PER_PIC / 10;
+	
+	switch(AGV_status.runing_towards)
 	{
-		__disable_irq();
-		AGV_status.X_offset = (cameradata.x - PIC_CENTRE_X) * LEN_PER_PIC / 10;
-		AGV_status.Y_offset = (PIC_CENTRE_Y - cameradata.y) * LEN_PER_PIC / 10;
-		
-		switch(AGV_status.runing_towards)
-		{
-			case 0:
-				AGV_status.X_location  = (cameradata.number / 100) * ACON_LEN_QR + AGV_status.Y_offset - LEN_CAMERA_TO_CENTRE;
-				AGV_status.Y_location  = (cameradata.number % 100) * ACON_LEN_QR + AGV_status.X_offset;
-				Direction =  cameradata.O > 0 ? 180 - cameradata.O : -(cameradata.O - 180);
-				break;
-			case 90:
-				AGV_status.X_location  = (cameradata.number / 100) * ACON_LEN_QR - AGV_status.X_offset;
-				AGV_status.Y_location  = (cameradata.number % 100) * ACON_LEN_QR + AGV_status.Y_offset - LEN_CAMERA_TO_CENTRE;
-				Direction = 180 - cameradata.O;
+		case 0:
+			AGV_status.X_location  = (cameradata.number / 100) * ACON_LEN_QR + AGV_status.Y_offset - LEN_CAMERA_TO_CENTRE;
+			AGV_status.Y_location  = (cameradata.number % 100) * ACON_LEN_QR + AGV_status.X_offset;
+			Direction =  cameradata.O > 0 ? 180 - cameradata.O : -(cameradata.O - 180);
 			break;
-			case 180:
-				AGV_status.X_location  = (cameradata.number / 100) * ACON_LEN_QR - AGV_status.Y_offset + LEN_CAMERA_TO_CENTRE;
-				AGV_status.Y_location  = (cameradata.number % 100) * ACON_LEN_QR - AGV_status.X_offset;
-				Direction =  180 - cameradata.O;
-			break;
-			case 270:
-				AGV_status.X_location  = (cameradata.number / 100) * ACON_LEN_QR + AGV_status.X_offset;
-				AGV_status.Y_location  = (cameradata.number % 100) * ACON_LEN_QR - AGV_status.Y_offset + LEN_CAMERA_TO_CENTRE;
-				Direction =  180 - cameradata.O;
-			break;
-		}
-		
-		//if((Direction - AGV_status.Direction < 2.63 && Direction - AGV_status.Direction > -2.63) || !camera_status.init_flag)
-	//	{
-			AGV_status.Direction = Direction;
-			
-	//		if(AGV_status.init_Directon_flag)
-	//		{
-				//tuoluoyi_status.Degree = AGV_status.Direction;
-				//Encode_status.Degree = AGV_status.Direction;
-			//	PID_data_run.err_pre_1 = 0;
-			//	PID_data_run.err_now = 0;
-	//		}
-	//	}
-		__enable_irq();
+		case 90:
+			AGV_status.X_location  = (cameradata.number / 100) * ACON_LEN_QR - AGV_status.X_offset;
+			AGV_status.Y_location  = (cameradata.number % 100) * ACON_LEN_QR + AGV_status.Y_offset - LEN_CAMERA_TO_CENTRE;
+			Direction = 180 - cameradata.O;
+		break;
+		case 180:
+			AGV_status.X_location  = (cameradata.number / 100) * ACON_LEN_QR - AGV_status.Y_offset + LEN_CAMERA_TO_CENTRE;
+			AGV_status.Y_location  = (cameradata.number % 100) * ACON_LEN_QR - AGV_status.X_offset;
+			Direction =  180 - cameradata.O;
+		break;
+		case 270:
+			AGV_status.X_location  = (cameradata.number / 100) * ACON_LEN_QR + AGV_status.X_offset;
+			AGV_status.Y_location  = (cameradata.number % 100) * ACON_LEN_QR - AGV_status.Y_offset + LEN_CAMERA_TO_CENTRE;
+			Direction =  180 - cameradata.O;
+		break;
 	}
+	
+	AGV_status.Direction = Direction * ACON_CAMERA_ANGLE_WEIGHT + AGV_status.Direction * ( 1 - ACON_CAMERA_ANGLE_WEIGHT);
+	
+	AGV_status.Direction_Gyro = Direction * ACON_CAMERA_ANGLE_WEIGHT + AGV_status.Direction_Gyro * ( 1 - ACON_CAMERA_ANGLE_WEIGHT);
+	AGV_status.Direction_Enco = Direction * ACON_CAMERA_ANGLE_WEIGHT + AGV_status.Direction_Enco * ( 1 - ACON_CAMERA_ANGLE_WEIGHT);
+
+	PID_data_run.err_now = 0;
+	PID_data_run.err_pre_1 = 0;
+	PID_data_run.err_pre_2 = 0;
+	PID_data_V.err_now = 0;
+	PID_data_V.err_pre_1 = 0;
+	PID_data_V.err_pre_2 = 0;
+//	__enable_irq();
+
 	camera_status.init_flag = 1; 
 
 }
@@ -187,8 +185,6 @@ static void camera_data_tan(u8* data, u8 st, u8 len)
 				data_st_flag = 0;
 				index = 0;
 			}
-			
-				
 		}
 		else
 		{

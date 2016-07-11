@@ -24,7 +24,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f10x_it.h" 
 #include "string.h"
-#include "tuoluoyi.h" 
+#include "gyro.h" 
 #include "camera.h"
 #include "agv.h"
 #include "public.h"
@@ -86,11 +86,11 @@ void DebugMon_Handler(void)
 /*  available peripheral interrupt handler's name please refer to the startup */
 /*  file (startup_stm32f10x_xx.s).                                            */
 /******************************************************************************/
-#ifdef CON_TUOLUOYI_USART1
-#define USART1_RX_BUF		TUOLUOYI_RX_BUF
-#define USART1_BUF_LEN  TUOLUOYI_BUF_LEN
-#define USART1_INDEX		Tuoluoyi_rx_sta
-#endif /*CON_TUOLUOYI_USART1*/
+#ifdef CON_GYRO_USART1
+#define USART1_RX_BUF		GYRO_RX_BUF
+#define USART1_BUF_LEN  GYRO_BUF_LEN
+#define USART1_INDEX		Gyro_rx_sta
+#endif /*CON_GYRO_USART1*/
 
 #ifdef CON_CAMERA_USART1
 #define USART1_RX_BUF		CAMERA_RX_BUF
@@ -118,11 +118,11 @@ void USART1_IRQHandler(void)
 	
 }
 
-#ifdef CON_TUOLUOYI_USART2
-#define USART2_RX_BUF		TUOLUOYI_RX_BUF
-#define USART2_BUF_LEN  TUOLUOYI_BUF_LEN
-#define USART2_INDEX		Tuoluoyi_rx_sta
-#endif /*CON_TUOLUOYI_USART2*/
+#ifdef CON_GYRO_USART2
+#define USART2_RX_BUF		GYRO_RX_BUF
+#define USART2_BUF_LEN  GYRO_BUF_LEN
+#define USART2_INDEX		Gyro_rx_sta
+#endif /*CON_GYRO_USART2*/
 
 #ifdef CON_CAMERA_USART2
 #define USART2_RX_BUF		CAMERA_RX_BUF
@@ -174,7 +174,7 @@ void USART3_IRQHandler(void)
 		if(res == 0xff){
 			/*
 			//关闭后台任务，初始化相关变量
-			TUOLUOYI_IRQ_Set(DISABLE);
+			GYRO_IRQ_Set(DISABLE);
 
 			
 			memset((void *)&AGV_status,0,sizeof(AGV_status));
@@ -209,7 +209,7 @@ void SysTick_Handler(void)
 				}
 			}
 			#endif
-			AGV_status.control_req = 1;
+			AGV_status.control_req++;
 	
 		}
 

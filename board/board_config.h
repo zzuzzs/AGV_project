@@ -1,4 +1,4 @@
-#ifndef __BOARD_CONFIG_H
+ #ifndef __BOARD_CONFIG_H
 #define __BOARD_CONFIG_H
 #include "app_config.h"
 
@@ -11,8 +11,8 @@
 #define LEN_CAMERA_TO_CENTRE    40    //相机中心到小车中心的距离 单位cm
 
 
-//#define CON_TUOLUOYI_USART1	 
-#define CON_TUOLUOYI_USART2
+//#define CON_GYRO_USART1	 
+#define CON_GYRO_USART2
 
 #define CON_CAMERA_USART1
 //#define CON_CAMERA_USART2
@@ -31,13 +31,13 @@
 #define CON_ENCODE_LEFT    		 TIM3
 #define CON_ENCODE_ROTATING    TIM4
 
-#ifdef CON_TUOLUOYI_USART1
-#define TUOLUOYI_IRQ USART1_IRQn;
-#endif //CON_TUOLUOYI_USART1
+#ifdef CON_GYRO_USART1
+#define GYRO_IRQ USART1_IRQn;
+#endif //CON_GYRO_USART1
 
-#ifdef CON_TUOLUOYI_USART2
-#define TUOLUOYI_IRQ USART2_IRQn;
-#endif //CON_TUOLUOYI_USART2
+#ifdef CON_GYRO_USART2
+#define GYRO_IRQ USART2_IRQn;
+#endif //CON_GYRO_USART2
 
 
 #ifdef CON_CAMERA_USART1
@@ -54,11 +54,11 @@
 
 /**********************check************************************/
 
-#if defined(CON_TUOLUOYI_USART1)  && defined(CON_CAMERA_USART1)
+#if defined(CON_GYRO_USART1)  && defined(CON_CAMERA_USART1)
 #error "resource conflict.please check tuoluoyiand &&camera usart set in board_config.h"
 #endif
 
-#if defined(CON_TUOLUOYI_USART2)  && defined(CON_CAMERA_USART2)
+#if defined(CON_GYRO_USART2)  && defined(CON_CAMERA_USART2)
 #error "resource conflict.please check tuoluoyiand &&camera usart set in board_config.h"
 #endif
 

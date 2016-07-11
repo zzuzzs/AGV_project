@@ -54,6 +54,8 @@ typedef volatile struct {
 	float Y_location;		//小车Y轴方向的实际位置，单位cm，地面坐标系
 	float X_offset;			//相机X轴方向相对于二维码的位置，左负右正.单位cm，小车坐标系 :小车正前方为Y轴正向，右侧为X轴正向
 	float Y_offset;			//相机Y轴方向相对于二维码的位置，单位cm，小车坐标系
+	float Direction_Gyro;  //由陀螺仪计算出的小车行进方向与X轴正向夹角，单位度。地面坐标系
+	float Direction_Enco; //由编码器计算出的小车行进方向与X轴正向夹角，单位度。地面坐标系
 	float Direction;			//小车行进方向与X轴正向实际夹角，单位度。地面坐标系
 	float right_Voltage;  //单位 V
   float left_Voltage;		//单位 V
@@ -61,9 +63,9 @@ typedef volatile struct {
 } AGV_status_t;
 
 typedef struct{
-	float Degree;
-	float Degree_kalman;
-} Encode_status_t;
+	float Degree_T_kalman;
+	float Degree_T;
+} Encode_data_t;
 
 
 
@@ -81,22 +83,22 @@ typedef struct {
 	u8 data_type;
 	volatile float * X;
 	struct {
-		float *Encode_measure;
-		float *Tuoluoyi_measure;
+		volatile float *Encode_measure;
+		volatile float *Gyro_measure;
 		}	EG;
 	float P;
 	struct{
 		float Encode_Weight;
-		float Tuoluoyi_Weight;
+		float Gyro_Weight;
 	}H;
 	float Q;
 	struct{
 		float V_Encode;
-		float V_Tuoluoyi;
+		float V_Gyro;
 	} V;
 	struct {
 		float R_Encode;
-		float R_Tuoluoyi;
+		float R_Gyro;
 	} R;
 } kalman_data_t;
 
@@ -113,7 +115,7 @@ enum control_type{
 };
 
 enum kalman_type{
-	TUOLUOYI_DATA = 1,
+	GYRO_DATA = 1,
 	ENCODE_DATA  = 2,
 	DEGREE_DATA = 3,
 };
@@ -150,7 +152,7 @@ extern AGV_control_t AGV_control_data_8;
 extern PID_data_t PID_data_run;
 extern PID_data_t PID_data_V;
 extern kalman_data_t Encode_kalman_data;
-extern Encode_status_t Encode_status;
+extern Encode_data_t Encode_data;
 extern kalman_data_t Degree_kalman_data;
 
 extern u32 systick;
@@ -160,12 +162,13 @@ extern u8 command_buf[9];
 /* Exported functions ------------------------------------------------------- */
 void delay_ms(u32 cnt);
 void START_BUTTON_IRQ_Set(FunctionalState status);
-void TUOLUOYI_IRQ_Set(FunctionalState status);
+void GYRO_IRQ_Set(FunctionalState status);
 void CAMERA_IRQ_Set(FunctionalState status);
 void AGV_control_data_init(void);
 void PID_run_data_init(void);
 void PID_V_data_init(void);
 float PID_process(PID_data_t * PID_data_p);
+float  PID_process_tmp(PID_data_t * PID_data_p);
 void command_process(void);
 void status_printf(AGV_status_t *p);
 void Encode_kalman_init(void);

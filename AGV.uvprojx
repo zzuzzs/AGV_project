@@ -698,16 +698,6 @@
               <FilePath>.\board\board.c</FilePath>
             </File>
             <File>
-              <FileName>tuoluoyi.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\board\tuoluoyi.c</FilePath>
-            </File>
-            <File>
-              <FileName>tuoluoyi.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\board\tuoluoyi.h</FilePath>
-            </File>
-            <File>
               <FileName>camera.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\board\camera.c</FilePath>
@@ -736,6 +726,16 @@
               <FileName>flash.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\board\flash.h</FilePath>
+            </File>
+            <File>
+              <FileName>gyro.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\board\gyro.c</FilePath>
+            </File>
+            <File>
+              <FileName>gyro.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\board\gyro.h</FilePath>
             </File>
           </Files>
         </Group>

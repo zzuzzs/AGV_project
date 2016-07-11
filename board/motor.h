@@ -32,6 +32,7 @@ enum AGV_UPDATA_STATUS{
 /* Exported macro ------------------------------------------------------------*/
 
 /* Exported functions ------------------------------------------------------- */
+void motor_voltage_set(u8 WHICH_MOTOR,float Voltage);
 void motor_speed_set(u8 WHICH_MOTOR,float Speed);
 void motor_run(u8 WHICH_MOTOR,u8 CW_CCW);
 void motor_stop(u8 WHICH_MOTOR);

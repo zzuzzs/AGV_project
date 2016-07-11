@@ -4,7 +4,7 @@
 #include "public.h"
 #include <stdio.h>
 #include "camera.h"
-#include "tuoluoyi.h"
+#include "gyro.h"
 #include "motor.h"
 
 
@@ -24,7 +24,7 @@ PID_data_t PID_data_V = {0};
 
 u32 systick = 0;
 kalman_data_t Encode_kalman_data = {0};
-Encode_status_t Encode_status = {0};
+Encode_data_t Encode_data = {0};
 
 kalman_data_t Degree_kalman_data = {0};
 
@@ -36,7 +36,7 @@ void AGV_control_data_init(void)
 	AGV_control_data_1.available_flag  = 1;
 	AGV_control_data_1.data_type = RUNING_TYPE;
 	AGV_control_data_1.data.dest_data.dest_X = 800;
-	AGV_control_data_1.data.dest_data.dest_Y = 500;
+	AGV_control_data_1.data.dest_data.dest_Y = 0;
 	
 	AGV_control_data_2.available_flag = 1;
 	AGV_control_data_2.data_type = ROTATION_TYPE;
@@ -102,8 +102,8 @@ void Encode_kalman_init(void)
 	Encode_kalman_data.Q = EMNSTD * EMNSTD;
 	Encode_kalman_data.R.R_Encode = EMNSTD * EMNSTD;
 	Encode_kalman_data.V.V_Encode = EMNSTD;
-	Encode_kalman_data.X = &Encode_status.Degree_kalman;
-	Encode_kalman_data.EG.Encode_measure = &Encode_status.Degree;
+	Encode_kalman_data.X = &Encode_data.Degree_T;
+	Encode_kalman_data.EG.Encode_measure = &Encode_data.Degree_T_kalman;
 	
 }
 
@@ -111,17 +111,17 @@ void Encode_kalman_init(void)
 void Degree_kalman_init(void)
 {
 	Degree_kalman_data.data_type = DEGREE_DATA;
-	Degree_kalman_data.EG.Encode_measure = &Encode_status.Degree_kalman;
-	Degree_kalman_data.EG.Tuoluoyi_measure = &tuoluoyi_status.Degree_kalman;
+	Degree_kalman_data.EG.Encode_measure = &AGV_status.Direction_Enco;
+	Degree_kalman_data.EG.Gyro_measure = &AGV_status.Direction_Gyro;
 	Degree_kalman_data.X = &AGV_status.Direction;
 	Degree_kalman_data.H.Encode_Weight = 1;
-	Degree_kalman_data.H.Tuoluoyi_Weight = 1;
+	Degree_kalman_data.H.Gyro_Weight = 1;
 	Degree_kalman_data.P = 0.001;
 	Degree_kalman_data.Q = PNSTD * PNSTD;
 	Degree_kalman_data.R.R_Encode = RA_ENCO * RA_ENCO;
-	Degree_kalman_data.R.R_Tuoluoyi  = RA_GYRO * RA_GYRO;
+	Degree_kalman_data.R.R_Gyro  = RA_GYRO * RA_GYRO;
 	Degree_kalman_data.V.V_Encode  = EMNSTD * EMNSTD;
-	Degree_kalman_data.V.V_Tuoluoyi = GMNSTD * GMNSTD;
+	Degree_kalman_data.V.V_Gyro = GMNSTD * GMNSTD;
 }
 
 
@@ -131,11 +131,11 @@ void Kalman_process(kalman_data_t * kalman_data_p)
 	float P = 0;
 	float H[2] = {0};
 	float WE = kalman_data_p->H.Encode_Weight;
-	float WG = kalman_data_p->H.Tuoluoyi_Weight;
-	float RG = kalman_data_p->R.R_Tuoluoyi;
+	float WG = kalman_data_p->H.Gyro_Weight;
+	float RG = kalman_data_p->R.R_Gyro;
 	float RE = kalman_data_p->R.R_Encode;
 	float E = *kalman_data_p->EG.Encode_measure;
-	float G = *kalman_data_p->EG.Tuoluoyi_measure;
+	float G = *kalman_data_p->EG.Gyro_measure;
 	float a = 0;
 	float b = 0;
 	float c = 0;
@@ -145,7 +145,7 @@ void Kalman_process(kalman_data_t * kalman_data_p)
 	float K2[2] = {0};
 	float X = 0;
 	H[0] = kalman_data_p->H.Encode_Weight;
-	H[1] = kalman_data_p->H.Tuoluoyi_Weight;
+	H[1] = kalman_data_p->H.Gyro_Weight;
 	
 	*kalman_data_p->X = *kalman_data_p->X;  //´ýÍêÉÆ
 	X = *kalman_data_p->X;
@@ -166,7 +166,7 @@ void Kalman_process(kalman_data_t * kalman_data_p)
 
 	switch(kalman_data_p->data_type)
 	{
-		case TUOLUOYI_DATA:
+		case GYRO_DATA:
 			K = P * WG / (WG * P * WG + RG);
 			*kalman_data_p->X += K *(G - WG * X);
 			kalman_data_p->P -= K * WG * P;
@@ -229,11 +229,11 @@ void CAMERA_IRQ_Set(FunctionalState status)
 }
 
 
-void TUOLUOYI_IRQ_Set(FunctionalState status)
+void GYRO_IRQ_Set(FunctionalState status)
 {
 	NVIC_InitTypeDef NVIC_InitStructure = {0};
-	NVIC_InitStructure.NVIC_IRQChannel = TUOLUOYI_IRQ;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = TUOLUOYI_IRQ_PRIORITY;
+	NVIC_InitStructure.NVIC_IRQChannel = GYRO_IRQ;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = GYRO_IRQ_PRIORITY;
   NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
   NVIC_InitStructure.NVIC_IRQChannelCmd = status;
   NVIC_Init(&NVIC_InitStructure);
@@ -269,11 +269,25 @@ float  PID_process(PID_data_t * PID_data_p)
 	tmp = PID_data_p->Kp * (PID_data_p->err_now - PID_data_p->err_pre_1)  +  \
 				PID_data_p->Kp * (ACON_PID_CONTROL_TIME / 1000.0) * PID_data_p->err_now / PID_data_p->Ti +   \
 				PID_data_p->Kp * PID_data_p->Td * ACON_PID_CONTROL_RATE * (PID_data_p->err_now + PID_data_p->err_pre_2 - 2 * PID_data_p->err_pre_1);
-	
-	PID_data_p->err_pre_1 = PID_data_p->err_now;
 	PID_data_p->err_pre_2 = PID_data_p->err_pre_1;
+	PID_data_p->err_pre_1 = PID_data_p->err_now;
 	return tmp;
 }
+
+
+float  PID_process_tmp(PID_data_t * PID_data_p)
+{
+	float tmp = 0;
+	tmp = PID_data_p->Kp * (PID_data_p->err_now - PID_data_p->err_pre_1);  // +  \
+				PID_data_p->Kp * (ACON_PID_CONTROL_TIME / 1000.0) * PID_data_p->err_now / PID_data_p->Ti +   \
+				PID_data_p->Kp * PID_data_p->Td * ACON_PID_CONTROL_RATE * (PID_data_p->err_now + PID_data_p->err_pre_2 - 2 * PID_data_p->err_pre_1);
+	
+	
+	PID_data_p->err_pre_2 = PID_data_p->err_pre_1;
+	PID_data_p->err_pre_1 = PID_data_p->err_now;
+	return tmp;
+}
+
 
 void command_process(void)
 {
@@ -344,12 +358,13 @@ void status_printf(AGV_status_t *p)
 	
 	sprintf(tmp,"I%f\n",tuoluoyiinfo.yaw);
 	usart_sent(tmp);
-	*/
-	sprintf(tmp,"G%f\n",p->Direction);
-	usart_sent(tmp);
-
 	sprintf(tmp,"J%d\n",p->runing_towards);
 	usart_sent(tmp);
+	
+	*/
+	sprintf(tmp,"G%f\n",p->Direction > 180 ? p->Direction - 360 : p->Direction);
+	usart_sent(tmp);
+
 	
 }
 

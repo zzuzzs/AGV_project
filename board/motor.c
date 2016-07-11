@@ -22,12 +22,8 @@ static float DAC_8551_set(SPI_TypeDef* SPIx,float Voltage)
 	
 }
 
-
-void motor_speed_set(u8 WHICH_MOTOR,float Speed)
+void motor_voltage_set(u8 WHICH_MOTOR,float Voltage)
 {
-	float Voltage = 0;
-	Voltage = Speed / PI / (D_MOTOR  / 100.0) / NOMBER_OF_TURNS_PRE_VOLTAGE_PRE_SECODE;
-	
 	switch(WHICH_MOTOR)
 	{
 		case LEFT_MOTOR:
@@ -53,8 +49,15 @@ void motor_speed_set(u8 WHICH_MOTOR,float Speed)
 			GPIO_SetBits(GPIOE,MRO_CS);
 			break;
 		
-	}
-	
+	}	
+}
+
+
+void motor_speed_set(u8 WHICH_MOTOR,float Speed)   //²»¾«È·
+{
+	float Voltage = 0;
+	Voltage = Speed / PI / (D_MOTOR  / 100.0) / NOMBER_OF_TURNS_PRE_VOLTAGE_PRE_SECODE;
+	motor_voltage_set(WHICH_MOTOR,Voltage);
 }
 
 void motor_run(u8 WHICH_MOTOR,u8 CW_CCW)
@@ -77,7 +80,7 @@ void motor_run(u8 WHICH_MOTOR,u8 CW_CCW)
 				break;
 			case ROTATION_MOTOR:
 				GPIO_ResetBits(GPIOE,MRO_CW_CCW);
-				GPIO_ResetBits(GPIOE,MRO_RUN_BREAK | MRO_START_STOP);
+				GPIO_SetBits(GPIOE,MRO_RUN_BREAK | MRO_START_STOP);
 				break;
 		}
 	}
@@ -99,7 +102,7 @@ void motor_run(u8 WHICH_MOTOR,u8 CW_CCW)
 				break;
 			case ROTATION_MOTOR:
 				GPIO_SetBits(GPIOE,MRO_CW_CCW);
-				GPIO_ResetBits(GPIOE,MRO_RUN_BREAK | MRO_START_STOP);
+				GPIO_SetBits(GPIOE,MRO_RUN_BREAK | MRO_START_STOP);
 				break;
 		}
 	}
@@ -122,7 +125,7 @@ void motor_stop(u8 WHICH_MOTOR)
 			GPIO_SetBits(GPIOD,MUD_FWD);
 			break;
 		case ROTATION_MOTOR:
-			GPIO_SetBits(GPIOE,MRO_START_STOP);
+			GPIO_SetBits(GPIOE,MRO_RUN_BREAK);
 			break;
 	}
 }

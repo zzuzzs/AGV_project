@@ -1,23 +1,29 @@
 #include "agv.h"
 
+static float run_speed_voltage_control = 0;
+
 void AGV_V_set(float speed)
 {
 	AGV_status.V_Set = speed;
+	
+	run_speed_voltage_control = speed / PI / (D_MOTOR  / 100.0) / NOMBER_OF_TURNS_PRE_VOLTAGE_PRE_SECODE;
 	motor_speed_set(RIGHT_MOTOR,speed);
 	motor_speed_set(LEFT_MOTOR,speed);
+	
 }
 
 
 void AGV_run(void)
 {
-	AGV_V_set(ACON_RUN_SPEED);
+	AGV_V_set( ACON_RUN_SPEED_INIT);
+	//AGV_status.V_Set = ACON_RUN_SPEED_INIT;
 	motor_run(LEFT_MOTOR,CW);
 	motor_run(RIGHT_MOTOR,CCW);
-	AGV_status.runing_status = 1;
+	AGV_status.runing_status = 1; 
 	AGV_status.rotating_status = 0;
 	
 }
-
+ 
 void AGV_stop(void)
 {
 	motor_stop(LEFT_MOTOR);
@@ -81,31 +87,51 @@ static void init_next_run_control(void)
 }
 
 void AGV_run_control(float len_offset, float degree_offset,float len_dest)
-{
+{ 
 		float alignment1 = 0,alignment2 = 0;
-	
+
 		if(len_dest < ACON_DEST_CONTROL_LEN)
 		{
-			
 			AGV_status.updata_waitting_status = LEN_UPDATA_WRITING;
 		}
-	
-		
+
+		if(AGV_status.updata_waitting_status == LEN_UPDATA_WRITING)
+		{
+			if(AGV_status.V_Set > ACON_RUN_SPEED_INIT)
+			{
+				AGV_status.V_Set -= ACON_RUN_OR_STOP_ACC * ACON_PID_CONTROL_TIME / 1000.0;
+			}
+		}else
+		{
+			if(AGV_status.V_Set < ACON_RUN_SPEED)
+			{
+				AGV_status.V_Set += ACON_RUN_OR_STOP_ACC * ACON_PID_CONTROL_TIME / 1000.0;
+			}	else
+			{
+				AGV_status.V_Set = ACON_RUN_SPEED;
+			}
+		}
+			
 		PID_data_V.err_now = AGV_status.V_Set - (AGV_status.V_left + AGV_status.V_right) / 2.0;
 		PID_data_run.err_now = -(degree_offset + 180 * len_offset / ACON_LEN_QR / PI) / 10.0;
 		
 		alignment1 = PID_process(&PID_data_V);
 		alignment2 = PID_process(&PID_data_run);
-			
-		motor_speed_set(LEFT_MOTOR,AGV_status.V_Set + alignment1 + alignment2);
-		motor_speed_set(RIGHT_MOTOR,AGV_status.V_Set + alignment1 - alignment2);
 		
-
+		run_speed_voltage_control += alignment1;
+		
+		if(run_speed_voltage_control > 4.5)
+			run_speed_voltage_control  = 4.5;
+		else if(run_speed_voltage_control < 0)
+			run_speed_voltage_control = 0;
+				
+		motor_voltage_set(LEFT_MOTOR,run_speed_voltage_control + alignment2);
+		motor_voltage_set(RIGHT_MOTOR,run_speed_voltage_control - alignment2);
+		
 		if(len_dest <  ACON_DEST_LEN_OFFSET)// && len_dest > -ACON_DEST_LEN_OFFSET)
 		{
 			AGV_stop();
 		}
-		
 }
 
 void AGV_rotating_control(void)
@@ -168,38 +194,32 @@ static void AGV_control_pre(void)
 		LEN_left = AGV_status.V_left * ACON_PID_CONTROL_TIME / 1000 * 100;
 		if(AGV_status.runing_status)
 		{
-			Encode_status.Degree += (LEN_left - LEN_right) / (PI * 2 * LEN_WHELLS) * 360;
+			Encode_data.Degree_T = (LEN_left - LEN_right) / (PI * 2 * LEN_WHELLS) * 360;
 		}
 		else if(AGV_status.rotating_status && RIGHT  == AGV_status.AGV_control_p->data.rotating_data.rotating_towards)
 		{
-			Encode_status.Degree += (LEN_left + LEN_right) / (PI * 2 * LEN_WHELLS) * 360;
+			Encode_data.Degree_T = (LEN_left + LEN_right) / (PI * 2 * LEN_WHELLS) * 360;
 		}
 		else if(AGV_status.rotating_status && LEFT  == AGV_status.AGV_control_p->data.rotating_data.rotating_towards)
 		{
-			Encode_status.Degree += (-LEN_left - LEN_right) / (PI * 2 * LEN_WHELLS) * 360;
+			Encode_data.Degree_T = (-LEN_left - LEN_right) / (PI * 2 * LEN_WHELLS) * 360;
 		}
 		
-		if(Encode_status.Degree < 0)
-		{
-			Encode_status.Degree += 360;
-		}
-		else if(Encode_status.Degree > 360)
-		{
-			Encode_status.Degree -= 360;
-		}
 		Kalman_process(&Encode_kalman_data);
+		AGV_status.Direction_Enco += Encode_data.Degree_T_kalman;
+		
+		if(AGV_status.Direction_Enco < 0)
+		{
+			AGV_status.Direction_Enco += 360;
+		}
+		else if(AGV_status.Direction_Enco > 360)
+		{
+			AGV_status.Direction_Enco -= 360;
+		}
+		
 		
 		if(LEN_UPDATA_WRITING == AGV_status.updata_waitting_status)
 		{
-			/*
-			if(AGV_status.V_Set > ACON_STOP_SPEED)
-			{
-				AGV_V_set(AGV_status.V_Set - ACON_RUN_A *  ACON_PID_CONTROL_TIME / 1000.0);
-				
-			}*/
-			LEN_right = AGV_status.V_right * ACON_PID_CONTROL_TIME / 1000 * 100;
-			LEN_left = AGV_status.V_left * ACON_PID_CONTROL_TIME / 1000 * 100;
-			
 			switch(AGV_status.runing_towards)
 			{
 				case 0:
@@ -249,7 +269,6 @@ void AGV_control(void)
 		}
 		len_offset = AGV_status.X_offset;      //左偏为负，右偏为正 
 		AGV_run_control(len_offset,degree_offset,len_dest);
-		
 	}
 
 	if(AGV_status.rotating_status)
@@ -257,8 +276,7 @@ void AGV_control(void)
 		float degree_offset = 0;
 		
 		AGV_rotating_control();
-		
-		
+
 		switch(AGV_status.runing_towards)
 		{
 			case 0:
@@ -267,7 +285,7 @@ void AGV_control(void)
 			default:
 				degree_offset = AGV_status.Direction - AGV_status.runing_towards;
 		}
-		if(degree_offset < 1 && degree_offset > -1)
+		if(degree_offset < ACON_DEGREE_OFFSET && degree_offset > -ACON_DEGREE_OFFSET)
 		{
 			AGV_stop();
 		}
@@ -285,7 +303,7 @@ void AGV_control(void)
 		
 	}
 	__disable_irq();
-	AGV_status.control_req = 0;
+	AGV_status.control_req--;
 	__enable_irq();
 }
 
@@ -336,5 +354,3 @@ void AGV_pre_set(void)
 	}
 
 }
-
-

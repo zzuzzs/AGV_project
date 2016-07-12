@@ -1,5 +1,5 @@
-#ifndef  __TUOLUOIYI_H
-#define __TUOLUOIYI_H
+#ifndef  __GYRO_H
+#define __GYRO_H
 #include "public.h"
 
 /* Exported types ------------------------------------------------------------*/
@@ -38,10 +38,12 @@ typedef struct {
 /* Exported variable --------------------------------------------------------*/
 extern u8  GYRO_RX_BUF[GYRO_BUF_LEN];
 extern int Gyro_rx_sta;
+extern Gyro_data_t Gyrodata;
 extern Gyro_info_t  Gyroinfo;
+extern kalman_data_t Gyro_kalman_data;
 
 /* Exported functions ------------------------------------------------------- */
 void Gyro_process(void);
 void Gyro_kalman_init(void);
-#endif //__TUOLUOIYI_H
+#endif //__GYRO_H
 

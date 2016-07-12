@@ -1,3 +1,5 @@
+#include "motor.h"
+#include "gyro.h"
 #include "agv.h"
 
 static float run_speed_voltage_control = 0;
@@ -16,7 +18,7 @@ void AGV_V_set(float speed)
 void AGV_run(void)
 {
 	AGV_V_set( ACON_RUN_SPEED_INIT);
-	//AGV_status.V_Set = ACON_RUN_SPEED_INIT;
+	//AGV_status.V_Set = ACON_RUN_SPEED_INIT;  
 	motor_run(LEFT_MOTOR,CW);
 	motor_run(RIGHT_MOTOR,CCW);
 	AGV_status.runing_status = 1; 
@@ -205,9 +207,9 @@ static void AGV_control_pre(void)
 			Encode_data.Degree_T = (-LEN_left - LEN_right) / (PI * 2 * LEN_WHELLS) * 360;
 		}
 		
-		Kalman_process(&Encode_kalman_data);
+ 		Kalman_process(&Encode_kalman_data);
 		AGV_status.Direction_Enco += Encode_data.Degree_T_kalman;
-		
+		 
 		if(AGV_status.Direction_Enco < 0)
 		{
 			AGV_status.Direction_Enco += 360;
@@ -217,7 +219,18 @@ static void AGV_control_pre(void)
 			AGV_status.Direction_Enco -= 360;
 		}
 		
-		
+		Kalman_process(&Gyro_kalman_data);
+//		Gyroinfo.yaw += Gyrodata.YawRate_kalman * T * 180 / PI;
+		AGV_status.Direction_Gyro -=  Gyrodata.YawRate_kalman * (ACON_PID_CONTROL_TIME / 1000.0) * 180 / PI;
+		if(AGV_status.Direction_Gyro < 0)
+		{
+			AGV_status.Direction_Gyro += 360;
+		}
+		else if(AGV_status.Direction_Gyro > 360)
+		{
+			AGV_status.Direction_Gyro -= 360;
+		}
+
 		if(LEN_UPDATA_WRITING == AGV_status.updata_waitting_status)
 		{
 			switch(AGV_status.runing_towards)

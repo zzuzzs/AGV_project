@@ -34,7 +34,9 @@ int main(void)
 		sFLASH_WriteBuffer(&Reset_Flag,ResetTest_ADDR,1);
 	}
 	__enable_irq();
+	#ifdef  DEBUG
 	AGV_status.runbutton_status = 1;
+	#endif
 	while(1)
 	{
 		camera_process();
@@ -66,7 +68,7 @@ int main(void)
 						if(AGV_status.control_req > 0)
 						{
 							 AGV_control();
-							// status_printf(&AGV_status);	
+							 //status_printf(&AGV_status);	
 						}
 						
 				//	if(!AGV_status.runbutton_status)

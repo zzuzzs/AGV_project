@@ -56,6 +56,7 @@ typedef volatile struct {
 	float Y_offset;			//相机Y轴方向相对于二维码的位置，单位cm，小车坐标系
 	float Direction_Gyro;  //由陀螺仪计算出的小车行进方向与X轴正向夹角，单位度。地面坐标系
 	float Direction_Enco; //由编码器计算出的小车行进方向与X轴正向夹角，单位度。地面坐标系
+	float Direction_kalman;			
 	float Direction;			//小车行进方向与X轴正向实际夹角，单位度。地面坐标系
 	float right_Voltage;  //单位 V
   float left_Voltage;		//单位 V
@@ -92,10 +93,12 @@ typedef struct {
 		float Gyro_Weight;
 	}H;
 	float Q;
+	#if 0
 	struct{
 		float V_Encode;
 		float V_Gyro;
 	} V;
+	#endif
 	struct {
 		float R_Encode;
 		float R_Gyro;

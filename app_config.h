@@ -62,7 +62,7 @@
 
 #define PNSTD  	 0.001   //模型标准差
 #define EMNSTD 	 0.003   //编码器测量噪声标准差
-#define GMNSTD 	 0.0016  //陀螺仪测量噪声标准差
+#define GMNSTD 	 0.001  //陀螺仪测量噪声标准差
 #define RA_ENCO  0.0007    //编码器小车姿态测量误差
 #define RA_GYRO  0.007     //陀螺仪小车姿态测量误差
 

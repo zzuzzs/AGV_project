@@ -81,6 +81,7 @@ void AGV_control_data_init(void)
 	AGV_control_data_6.next = &AGV_control_data_7;
 	AGV_control_data_7.next = &AGV_control_data_8;
 	AGV_control_data_8.next = &AGV_control_data_1;
+	
 
 }
 
@@ -101,9 +102,9 @@ void Encode_kalman_init(void)
 	Encode_kalman_data.H.Encode_Weight = 1;
 	Encode_kalman_data.Q = EMNSTD * EMNSTD;
 	Encode_kalman_data.R.R_Encode = EMNSTD * EMNSTD;
-	Encode_kalman_data.V.V_Encode = EMNSTD;
-	Encode_kalman_data.X = &Encode_data.Degree_T;
-	Encode_kalman_data.EG.Encode_measure = &Encode_data.Degree_T_kalman;
+	//Encode_kalman_data.V.V_Encode = EMNSTD;
+	Encode_kalman_data.X = &Encode_data.Degree_T_kalman;
+	Encode_kalman_data.EG.Encode_measure = &Encode_data.Degree_T;
 	
 }
 
@@ -117,11 +118,11 @@ void Degree_kalman_init(void)
 	Degree_kalman_data.H.Encode_Weight = 1;
 	Degree_kalman_data.H.Gyro_Weight = 1;
 	Degree_kalman_data.P = 0.001;
-	Degree_kalman_data.Q = PNSTD * PNSTD;
+	Degree_kalman_data.Q = 0.001;  //PNSTD * PNSTD;
 	Degree_kalman_data.R.R_Encode = RA_ENCO * RA_ENCO;
 	Degree_kalman_data.R.R_Gyro  = RA_GYRO * RA_GYRO;
-	Degree_kalman_data.V.V_Encode  = EMNSTD * EMNSTD;
-	Degree_kalman_data.V.V_Gyro = GMNSTD * GMNSTD;
+//	Degree_kalman_data.V.V_Encode  = EMNSTD * EMNSTD;
+//	Degree_kalman_data.V.V_Gyro = GMNSTD * GMNSTD;
 }
 
 
@@ -152,17 +153,6 @@ void Kalman_process(kalman_data_t * kalman_data_p)
 	kalman_data_p->P += kalman_data_p->Q;
 	P = kalman_data_p->P;
 	
-	if(0 == AGV_status.runing_towards)
-	{
-		if(X < 180 && E  > 180)
-		{
-			E -= 360;
-		}
-		if(X > 180 && E < 180 )
-		{
-			E += 360;
-		}
-	}
 
 	switch(kalman_data_p->data_type)
 	{
@@ -177,6 +167,23 @@ void Kalman_process(kalman_data_t * kalman_data_p)
 			kalman_data_p->P -= K * WE * P;
 			break;
 		case DEGREE_DATA:
+					
+			if(0 == AGV_status.runing_towards)
+			{
+				if(X < 180)
+				{
+					if(E > 180)
+						E -= 360;
+					if(G > 180)
+						G -= 360;
+				}else
+				{ 
+					if(E < 180)
+						E += 360;
+					if(G < 180)
+						G += 360;
+				}
+			}
 			a = P * WE * WE + RE;
 			b = P * WE *WG;
 			c = b;
@@ -190,18 +197,18 @@ void Kalman_process(kalman_data_t * kalman_data_p)
 			K2[1] = P * (H[0] * A[0][1] + H[1] * A[1][1]);
 			*kalman_data_p->X += K2[0] * ( E - H[0] * X) + K2[1] * (G - H[1] * X);
 			kalman_data_p->P -= P * (K2[0] * H[0] + K2[1] * H[1]);
+			if(*kalman_data_p->X > 360)
+			{
+				*kalman_data_p->X -= 360;
+			}else	if(*kalman_data_p->X < 0)
+			{
+				*kalman_data_p->X += 360;
+			}
+			
 			break;
 	
 	}
 	
-	if(*kalman_data_p->X > 360)
-	{
-		*kalman_data_p->X -= 360;
-	}
-	if(*kalman_data_p->X < 0)
-	{
-		*kalman_data_p->X += 360;
-	}
 	
 }
 
@@ -333,18 +340,18 @@ void status_printf(AGV_status_t *p)
 {
 	char tmp[100]  = {0};//= "**\n";
 //	usart_sent(tmp);
-	/*
+	
 	sprintf(tmp,"A%f ",p->V_right);
 	usart_sent(tmp);
 	
 	sprintf(tmp,"B%f\n",p->V_left);
 	usart_sent(tmp);
-		
+	/*	
 	sprintf(tmp,"C%f ",p->right_Voltage);
 	usart_sent(tmp);
 	
 	sprintf(tmp,"D%f\n",p->left_Voltage);
-	usart_sent(tmp);  
+	usart_sent(tmp); 
 	
 	sprintf(tmp,"E%d\n ",p->encode_right_cnt);
 	usart_sent(tmp);
@@ -352,19 +359,18 @@ void status_printf(AGV_status_t *p)
 	sprintf(tmp,"F%d\n",p->encode_left_cnt);
 	usart_sent(tmp);
 	
-	
 	sprintf(tmp,"H%f\n",p->X_location);
 	usart_sent(tmp);
-	
-	sprintf(tmp,"I%f\n",tuoluoyiinfo.yaw);
-	usart_sent(tmp);
-	sprintf(tmp,"J%d\n",p->runing_towards);
-	usart_sent(tmp);
-	
 	*/
+
 	sprintf(tmp,"G%f\n",p->Direction > 180 ? p->Direction - 360 : p->Direction);
 	usart_sent(tmp);
-
+	
+	sprintf(tmp,"I%f\n",p->X_offset);
+	usart_sent(tmp);
+	
+	sprintf(tmp,"J%f\n",p->V_Set);
+	usart_sent(tmp);
 	
 }
 

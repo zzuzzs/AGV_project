@@ -5,6 +5,7 @@ int Gyro_rx_sta = 0;
 u8  GYRO_RX_BUF[GYRO_BUF_LEN] = {0};
 Gyro_info_t  Gyroinfo = {0};
 kalman_data_t Gyro_kalman_data = {0};
+Gyro_data_t Gyrodata = {0};
 
 static char err = 0;
 
@@ -15,7 +16,7 @@ static char data_st_flag = 0;
 
 static int index_f = 0;
 static int index_f_flag = 0;
-static Gyro_data_t Gyrodata = {0};
+
 
 static float chartofloat(char *data)
 {
@@ -76,9 +77,10 @@ static void Gyro_data_tan(u8 * data, u8 st, u8 len)
 			{
 				data_st_flag = 0;
 				data_analysis(Gyro_pag,&Gyrodata);
-				Kalman_process(&Gyro_kalman_data);
+				/*
+			//	Kalman_process(&Gyro_kalman_data);
 		//		Gyroinfo.yaw += Gyrodata.YawRate_kalman * T * 180 / PI;
-				AGV_status.Direction_Gyro -=  Gyrodata.YawRate_kalman * T * 180 / PI;
+		//		AGV_status.Direction_Gyro -=  Gyrodata.YawRate_kalman * T * 180 / PI;
 				if(AGV_status.Direction_Gyro < 0)
 				{
 					AGV_status.Direction_Gyro += 360;
@@ -87,6 +89,9 @@ static void Gyro_data_tan(u8 * data, u8 st, u8 len)
 				{
 					AGV_status.Direction_Gyro -= 360;
 				}
+				#endif
+				
+				*/
 				index = 0;
 				
 			}
@@ -139,7 +144,7 @@ void Gyro_kalman_init(void)
 	Gyro_kalman_data.H.Gyro_Weight = 1;
 	Gyro_kalman_data.Q = GMNSTD * GMNSTD;
 	Gyro_kalman_data.R.R_Gyro = GMNSTD * GMNSTD;
-	Gyro_kalman_data.V.V_Gyro = GMNSTD;
+	//Gyro_kalman_data.V.V_Gyro = GMNSTD;
 	Gyro_kalman_data.X = &Gyrodata.YawRate_kalman;
 	Gyro_kalman_data.EG.Gyro_measure = &Gyrodata.YawRate;
 	

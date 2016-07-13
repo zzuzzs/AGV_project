@@ -197,7 +197,7 @@ void Kalman_process(kalman_data_t * kalman_data_p)
 			K2[1] = P * (H[0] * A[0][1] + H[1] * A[1][1]);
 			*kalman_data_p->X += K2[0] * ( E - H[0] * X) + K2[1] * (G - H[1] * X);
 			kalman_data_p->P -= P * (K2[0] * H[0] + K2[1] * H[1]);
-			if(*kalman_data_p->X > 360)
+			if(*kalman_data_p->X >= 360)
 			{
 				*kalman_data_p->X -= 360;
 			}else	if(*kalman_data_p->X < 0)

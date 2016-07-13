@@ -85,7 +85,7 @@ static void init_next_run_control(void)
 		case ROTATION_TYPE:
 			AGV_rotate();
 			break;
-	}
+	} 
 }
 
 void AGV_run_control(float len_offset, float degree_offset,float len_dest)
@@ -214,7 +214,7 @@ static void AGV_control_pre(void)
 		{
 			AGV_status.Direction_Enco += 360;
 		}
-		else if(AGV_status.Direction_Enco > 360)
+		else if(AGV_status.Direction_Enco >= 360)
 		{
 			AGV_status.Direction_Enco -= 360;
 		}
@@ -226,7 +226,7 @@ static void AGV_control_pre(void)
 		{
 			AGV_status.Direction_Gyro += 360;
 		}
-		else if(AGV_status.Direction_Gyro > 360)
+		else if(AGV_status.Direction_Gyro >= 360)
 		{
 			AGV_status.Direction_Gyro -= 360;
 		}

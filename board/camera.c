@@ -105,6 +105,26 @@ END:
 			
 }
 
+static float camera_data_transfer(float Direction,float dest)
+{
+
+	if(0 == AGV_status.runing_towards)
+	{
+		if(Direction > 180)
+		{
+			Direction -= 360;
+		}
+			
+		if(dest > 180)
+		{
+			dest -= 360;
+		}
+	}
+	 dest =  Direction * ACON_CAMERA_ANGLE_WEIGHT + dest * ( 1 - ACON_CAMERA_ANGLE_WEIGHT);
+	
+	return dest < 0 ? (dest + 360) : dest;
+}
+
 
 static void  camera_data_analysis(char * data)
 {
@@ -142,11 +162,10 @@ static void  camera_data_analysis(char * data)
 		break;
 	}
 	
-	AGV_status.Direction = Direction * ACON_CAMERA_ANGLE_WEIGHT + AGV_status.Direction * ( 1 - ACON_CAMERA_ANGLE_WEIGHT);
-	
-	AGV_status.Direction_Gyro = Direction * ACON_CAMERA_ANGLE_WEIGHT + AGV_status.Direction_Gyro * ( 1 - ACON_CAMERA_ANGLE_WEIGHT);
-	AGV_status.Direction_Enco = Direction * ACON_CAMERA_ANGLE_WEIGHT + AGV_status.Direction_Enco * ( 1 - ACON_CAMERA_ANGLE_WEIGHT);
-
+	AGV_status.Direction = camera_data_transfer(Direction,AGV_status.Direction);
+	AGV_status.Direction_Gyro = camera_data_transfer(Direction,AGV_status.Direction_Gyro);
+	AGV_status.Direction_Enco = camera_data_transfer(Direction,AGV_status.Direction_Enco);
+		
 	PID_data_run.err_now = 0;
 	PID_data_run.err_pre_1 = 0;
 	PID_data_run.err_pre_2 = 0;

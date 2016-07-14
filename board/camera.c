@@ -172,6 +172,8 @@ static void  camera_data_analysis(char * data)
 	PID_data_V.err_now = 0;
 	PID_data_V.err_pre_1 = 0;
 	PID_data_V.err_pre_2 = 0;
+	
+	Encode_data.Encode_len = 0;
 //	__enable_irq();
 
 	camera_status.init_flag = 1; 

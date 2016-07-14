@@ -69,6 +69,7 @@ typedef struct {
 } AGV_status_t;
 
 typedef struct{
+	float Encode_len;
 	float Degree_T_kalman;
 	float Degree_T;
 } Encode_data_t;

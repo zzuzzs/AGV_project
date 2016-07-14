@@ -89,7 +89,7 @@ static void init_next_run_control(void)
 	switch(AGV_status.AGV_control_p->data_type)
 	{
 		case RUNING_TYPE:
-			AGV_run();
+			AGV_run(); 
 			break;
 		case STOP_TYPE:
 			AGV_stop();
@@ -138,7 +138,16 @@ void AGV_run_control(float len_offset, float degree_offset,float len_dest)
 		__enable_irq();
 		
 		PID_data_V.err_now = AGV_status.V_Set - (AGV_status.V_left + AGV_status.V_right) / 2.0;
-		PID_data_run.err_now = -(degree_offset + 180 * len_offset / ACON_LEN_QR / PI);
+		
+		if(Encode_data.Encode_len > ACON_LEN_QR + ACON_DEST_LEN_OFFSET)
+		{
+			PID_data_run.err_now = -degree_offset;
+			Encode_data.Encode_len = 0;
+			
+		}else
+		{
+			PID_data_run.err_now = -(degree_offset + 180 * len_offset / ACON_LEN_QR / PI);
+		}
 		
 		alignment1 = PID_process(&PID_data_V);
 		alignment2 = PID_process(&PID_data_run);
@@ -164,6 +173,7 @@ void AGV_run_control(float len_offset, float degree_offset,float len_dest)
 		if(len_dest <  ACON_DEST_LEN_OFFSET)// && len_dest > -ACON_DEST_LEN_OFFSET)
 		{
 			AGV_stop();
+			Encode_data.Encode_len = 0;
 		}
 		
 }
@@ -228,6 +238,7 @@ static void AGV_control_pre(void)
 		LEN_left = AGV_status.V_left * ACON_PID_CONTROL_TIME / 1000 * 100;
 		if(AGV_status.runing_status)
 		{
+			Encode_data.Encode_len += (LEN_right + LEN_left) / 2;
 			Encode_data.Degree_T = (LEN_left - LEN_right) / (PI * 2 * LEN_WHELLS) * 360;
 		}
 		else if(AGV_status.rotating_status && RIGHT  == AGV_status.AGV_control_p->data.rotating_data.rotating_towards)
@@ -263,8 +274,8 @@ static void AGV_control_pre(void)
 			AGV_status.Direction_Gyro -= 360;
 		}
 
-		if(LEN_UPDATA_WRITING == AGV_status.updata_waitting_status)
-		{
+		//if(LEN_UPDATA_WRITING == AGV_status.updata_waitting_status)
+		//{
 			switch(AGV_status.runing_towards)
 			{
 				case 0:
@@ -280,7 +291,7 @@ static void AGV_control_pre(void)
 					AGV_status.Y_location -= (LEN_right + LEN_left) / 2;
 				break;
 			}
-		}
+		//}
 	}
 }
 

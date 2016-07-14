@@ -13,7 +13,7 @@
 #define ACON_SYSIRQ_TIME  1  //系统中断时间 单位ms
 
 #define ACON_RUN_SPEED_INIT      0.1  //小车初始速度 单位m/s
-#define ACON_RUN_SPEED      0.4      //小车设定速度
+#define ACON_RUN_SPEED      0.1      //小车设定速度
 #define ACON_ROTATION_SPEED 0.1  //原地转弯的速度  单位m/s
 #define ACON_RUN_STOP_INIT_SPEED      0.1   //小车定点停车速度控制
 #define ACON_MAX_SPEED             0.8    //小车许可的最大速度

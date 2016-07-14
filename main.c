@@ -40,7 +40,7 @@ int main(void)
 		
 		if(camera_status.init_flag)
 		{
-			AGV_pre_set();
+			AGV_state_init();
 			START_BUTTON_IRQ_Set(ENABLE);
 			if(AGV_status.init_Directon_flag){
 				if(AGV_status.runbutton_status)

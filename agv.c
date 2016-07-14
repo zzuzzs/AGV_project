@@ -24,7 +24,6 @@ void AGV_run(void)
 	motor_run(RIGHT_MOTOR,CCW);
 	AGV_status.runing_status = 1; 
 	AGV_status.rotating_status = 0;
-	
 }
  
 void AGV_stop(void)
@@ -82,115 +81,6 @@ void AGV_rotate(void)
 	AGV_status.runing_towards = tmp;
 }
 
-static void init_next_run_control(void)
-{
-	AGV_status.AGV_control_p->available_flag = 0;
-	AGV_status.AGV_control_p = AGV_status.AGV_control_p->next;
-	switch(AGV_status.AGV_control_p->data_type)
-	{
-		case RUNING_TYPE:
-			AGV_run(); 
-			break;
-		case STOP_TYPE:
-			AGV_stop();
-			break;
-		case ROTATION_TYPE:
-			AGV_rotate();
-			break;
-	} 
-}
-
-void AGV_run_control(float len_offset, float degree_offset,float len_dest)
-{ 
-		float alignment1 = 0,alignment2 = 0;
-
-		if(len_dest < ACON_DEST_CONTROL_LEN)
-		{
-			AGV_status.updata_waitting_status = LEN_UPDATA_WRITING;
-		}
-
-		if(AGV_status.updata_waitting_status == LEN_UPDATA_WRITING  ||  \
-						(AGV_status.avoid_obj_warnning_cnt /*&& PALLET_UP == AGV_status.pallet_status*/))
-		{
-			if(AGV_status.V_Set > ACON_RUN_SPEED_INIT)
-			{
-				AGV_status.V_Set -= ACON_RUN_OR_STOP_ACC * ACON_PID_CONTROL_TIME / 1000.0;
-			}
-		}else
-		{
-			if(AGV_status.V_Set < ACON_RUN_SPEED)
-			{
-				AGV_status.V_Set += ACON_RUN_OR_STOP_ACC * ACON_PID_CONTROL_TIME / 1000.0;
-			}	else
-			{
-				AGV_status.V_Set = ACON_RUN_SPEED;
-			}
-		}
-		__disable_irq();
-		if(AGV_status.avoid_obj_warnning_cnt && \
-			(/*PALLET_DOWN == AGV_status.pallet_status ||*/AGV_status.V_Set <=  ACON_RUN_SPEED_INIT))
-		{
-			
-			AGV_stop();	
-		__enable_irq();
-			return;
-		}
-		__enable_irq();
-		
-		PID_data_V.err_now = AGV_status.V_Set - (AGV_status.V_left + AGV_status.V_right) / 2.0;
-		
-		if(Encode_data.Encode_len > ACON_LEN_QR + ACON_DEST_LEN_OFFSET)
-		{
-			PID_data_run.err_now = -degree_offset;
-			Encode_data.Encode_len = 0;
-			
-		}else
-		{
-			PID_data_run.err_now = -(degree_offset + 180 * len_offset / ACON_LEN_QR / PI);
-		}
-		
-		alignment1 = PID_process(&PID_data_V);
-		alignment2 = PID_process(&PID_data_run);
-		
-		run_speed_voltage_control += alignment1;
-		run_degree_voltage_control += alignment2;
-		/*
-		if(run_speed_voltage_control > 4.5)
-			run_speed_voltage_control  = 4.5;
-		else if(run_speed_voltage_control < 0)
-			run_speed_voltage_control = 0;
-			*/	
-		motor_voltage_set(LEFT_MOTOR,run_speed_voltage_control + run_degree_voltage_control);
-		motor_voltage_set(RIGHT_MOTOR,run_speed_voltage_control - run_degree_voltage_control);
-		
-		if(AGV_status.accident_stop_flag && !AGV_status.avoid_obj_warnning_cnt)
-		{
-			AGV_status.accident_stop_flag = 0;
-			run_speed_voltage_control = 0;
-			run_degree_voltage_control = 0;
-			AGV_run();
-		}
-		if(len_dest <  ACON_DEST_LEN_OFFSET)// && len_dest > -ACON_DEST_LEN_OFFSET)
-		{
-			AGV_stop();
-			Encode_data.Encode_len = 0;
-		}
-		
-}
-
-void AGV_rotating_control(void)
-{
-	/*
-	//PID调节左轮速度，使之与右轮相同，若处于举升状态，托盘同步回转
-	float tmp = 0;
-	PID_data_rotate.err_now  = AGV_status.V_right - AGV_status.V_left;
-	tmp = PID_process_tmp(&PID_data_rotate);
-	
-	tmp += AGV_status.V_left;
-	motor_speed_set(LEFT_MOTOR,tmp);
-	*/
-	
-}
 
 static void AGV_control_pre(void)
 {
@@ -295,6 +185,111 @@ static void AGV_control_pre(void)
 	}
 }
 
+
+
+static void AGV_run_control(float len_offset, float degree_offset,float len_dest)
+{ 
+		float alignment1 = 0,alignment2 = 0;
+
+		if(len_dest < ACON_DEST_CONTROL_LEN)
+		{
+			AGV_status.updata_waitting_status = LEN_UPDATA_WRITING;
+		}
+
+		if(AGV_status.updata_waitting_status == LEN_UPDATA_WRITING  ||  \
+						(AGV_status.avoid_obj_warnning_cnt /*&& PALLET_UP == AGV_status.pallet_status*/))
+		{
+			if(AGV_status.V_Set > ACON_RUN_SPEED_INIT)
+			{
+				AGV_status.V_Set -= ACON_RUN_OR_STOP_ACC * ACON_PID_CONTROL_TIME / 1000.0;
+			}
+		}else
+		{
+			if(AGV_status.V_Set < ACON_RUN_SPEED)
+			{
+				AGV_status.V_Set += ACON_RUN_OR_STOP_ACC * ACON_PID_CONTROL_TIME / 1000.0;
+			}	else
+			{
+				AGV_status.V_Set = ACON_RUN_SPEED;
+			}
+		}
+		__disable_irq();
+		if(AGV_status.avoid_obj_warnning_cnt && \
+			(/*PALLET_DOWN == AGV_status.pallet_status ||*/AGV_status.V_Set <=  ACON_RUN_SPEED_INIT))
+		{
+			
+			AGV_stop();	
+		__enable_irq();
+			return;
+		}
+		__enable_irq();
+		
+		PID_data_V.err_now = AGV_status.V_Set - (AGV_status.V_left + AGV_status.V_right) / 2.0;
+		PID_data_run.err_now = -(degree_offset + 180 * len_offset / ACON_LEN_QR / PI);
+				
+		alignment1 = PID_process(&PID_data_V);
+		alignment2 = PID_process(&PID_data_run);
+		
+		run_speed_voltage_control += alignment1;
+		run_degree_voltage_control += alignment2;
+		/*
+		if(run_speed_voltage_control > 4.5)
+			run_speed_voltage_control  = 4.5;
+		else if(run_speed_voltage_control < 0)
+			run_speed_voltage_control = 0;
+			*/	
+		motor_voltage_set(LEFT_MOTOR,run_speed_voltage_control + run_degree_voltage_control);
+		motor_voltage_set(RIGHT_MOTOR,run_speed_voltage_control - run_degree_voltage_control);
+		
+		if(AGV_status.accident_stop_flag && !AGV_status.avoid_obj_warnning_cnt)
+		{
+			AGV_status.accident_stop_flag = 0;
+			run_speed_voltage_control = 0;
+			run_degree_voltage_control = 0;
+			AGV_run();
+		}
+		if(len_dest <  ACON_DEST_LEN_OFFSET)// && len_dest > -ACON_DEST_LEN_OFFSET)
+		{
+			AGV_stop();
+			Encode_data.Encode_len = 0;
+		}
+		
+}
+
+static void AGV_rotating_control(void)
+{
+	/*
+	//PID调节左轮速度，使之与右轮相同，若处于举升状态，托盘同步回转
+	float tmp = 0;
+	PID_data_rotate.err_now  = AGV_status.V_right - AGV_status.V_left;
+	tmp = PID_process_tmp(&PID_data_rotate);
+	
+	tmp += AGV_status.V_left;
+	motor_speed_set(LEFT_MOTOR,tmp);
+	*/
+	
+}
+
+
+static void init_next_run_control(void)
+{
+	AGV_status.AGV_control_p->available_flag = 0;
+	AGV_status.AGV_control_p = AGV_status.AGV_control_p->next;
+	switch(AGV_status.AGV_control_p->data_type)
+	{
+		case RUNING_TYPE:
+			AGV_run(); 
+			break;
+		case STOP_TYPE:
+			AGV_stop();
+			break;
+		case ROTATION_TYPE:
+			AGV_rotate();
+			break;
+	} 
+}
+
+
 void AGV_control(void)
 {
 	AGV_control_pre();
@@ -323,6 +318,12 @@ void AGV_control(void)
 				degree_offset = AGV_status.Direction - 270;
 				break;
 		}
+		if(Encode_data.Encode_len > ACON_LEN_QR + ACON_DEST_LEN_OFFSET)
+		{
+			AGV_status.X_offset = 0;
+			Encode_data.Encode_len = 0;
+		}
+		
 		len_offset = AGV_status.X_offset;      //左偏为负，右偏为正 
 		AGV_run_control(len_offset,degree_offset,len_dest);
 	}
@@ -366,7 +367,7 @@ void AGV_control(void)
 
 
 
-void AGV_pre_set(void)
+void AGV_state_init(void)
 {
 	float angle_offset = AGV_status.Direction;
 	if(AGV_status.runing_towards == 0 && angle_offset > 180)

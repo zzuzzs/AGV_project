@@ -31,6 +31,10 @@ void AGV_stop(void)
 {
 	motor_stop(LEFT_MOTOR);
 	motor_stop(RIGHT_MOTOR);
+	PID_data_V.err_pre_1 = 0;
+	PID_data_V.err_pre_2 = 0;
+	PID_data_run.err_pre_1 = 0;
+	PID_data_run.err_pre_2 = 0;
 	if(!AGV_status.avoid_obj_warnning_cnt)
 	{
 		AGV_status.runing_status = 0;
@@ -150,7 +154,7 @@ void AGV_run_control(float len_offset, float degree_offset,float len_dest)
 		motor_voltage_set(LEFT_MOTOR,run_speed_voltage_control + run_degree_voltage_control);
 		motor_voltage_set(RIGHT_MOTOR,run_speed_voltage_control - run_degree_voltage_control);
 		
-		if(AGV_status.accident_stop_flag)
+		if(AGV_status.accident_stop_flag && !AGV_status.avoid_obj_warnning_cnt)
 		{
 			AGV_status.accident_stop_flag = 0;
 			run_speed_voltage_control = 0;

@@ -200,7 +200,7 @@ void SysTick_Handler(void)
 		if(AGV_status.control_st_flag)
 		{
 			#ifdef DEBUG
-			if(AGV_status.control_req)
+			if(AGV_status.control_req_status)
 			{
 				GPIO_SetBits(GPIOA,MCU_LED1);
 				while(1)
@@ -209,10 +209,41 @@ void SysTick_Handler(void)
 				}
 			}
 			#endif
-			AGV_status.control_req++;
+			AGV_status.control_req_status++;
 	
 		}
 
+	}
+}
+
+void EXTI15_10_IRQHandler(void)
+{
+	if(SET == EXTI_GetFlagStatus(AVOID_OBJ_LEFT_IRQ_LINE))
+	{
+		EXTI_ClearFlag(AVOID_OBJ_LEFT_IRQ_LINE);
+		if(GPIO_ReadInputDataBit(AVOID_OBJ_LEFT_IRQPIN_GPIO,CON_AVOID_OBJ_LEFT_IRQPIN))
+		{				
+			//GPIO_SetBits(GPIOA,MCU_LED1);
+			AGV_status.avoid_obj_warnning_cnt++;
+		}else {
+			//GPIO_ResetBits(GPIOA,MCU_LED1);
+			if(AGV_status.avoid_obj_warnning_cnt)
+				AGV_status.avoid_obj_warnning_cnt--;
+		}
+	}
+	
+	if(SET == EXTI_GetFlagStatus(AVOID_OBJ_RIGHT_IRQ_LINE))
+	{
+		EXTI_ClearFlag(AVOID_OBJ_RIGHT_IRQ_LINE);
+		if(GPIO_ReadInputDataBit(AVOID_OBJ_RIGHT_IRQPIN_GPIO,CON_AVOID_OBJ_RIGHT_IRQPIN))
+		{				
+			//GPIO_SetBits(GPIOA,MCU_LED2);
+			AGV_status.avoid_obj_warnning_cnt++;
+		}else {
+			//GPIO_ResetBits(GPIOA,MCU_LED2);
+			if(AGV_status.avoid_obj_warnning_cnt)
+				AGV_status.avoid_obj_warnning_cnt--;
+		}
 	}
 }
 
@@ -233,4 +264,6 @@ void STOP_BUTTON_IRQ_Handler
 	AGV_status.suspendbutton_status = 1;
 	AGV_stop();
 }
+
+
 

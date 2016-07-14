@@ -13,13 +13,13 @@
 #define ACON_SYSIRQ_TIME  1  //系统中断时间 单位ms
 
 #define ACON_RUN_SPEED_INIT      0.1  //小车初始速度 单位m/s
-#define ACON_RUN_SPEED      0.1      //小车设定速度
+#define ACON_RUN_SPEED      0.4      //小车设定速度
 #define ACON_ROTATION_SPEED 0.1  //原地转弯的速度  单位m/s
 #define ACON_RUN_STOP_INIT_SPEED      0.1   //小车定点停车速度控制
 #define ACON_MAX_SPEED             0.8    //小车许可的最大速度
 #define ACON_MIN_SPEED             0 //小车许可的最小速度
 #define ACON_RUN_OR_STOP_ACC       0.05    //小车变速时的加速度
-#define ACON_DEGREE_OFFSET 	3  //小车转弯时角度容错
+#define ACON_DEGREE_OFFSET 	1  //小车转弯时角度容错
 #define ACON_DEST_CONTROL_LEN    220  //行驶时的控制点
 
 #define ACON_DEST_LEN_OFFSET    1  //行驶时的控制容错
@@ -43,6 +43,7 @@
 #define	 DEBUG_USART_IRQ_PRIORITY   1
 #define	 GYRO_IRQ_PRIORITY   3
 #define  START_BUTTON_IRQ_PRIORITY   14
+#define  EXIT_IRQ15_10_PRIORITY       2
 
 
 

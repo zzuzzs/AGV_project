@@ -30,9 +30,12 @@ void AGV_stop(void)
 {
 	motor_stop(LEFT_MOTOR);
 	motor_stop(RIGHT_MOTOR);
-	AGV_status.runing_status = 0;
-	AGV_status.rotating_status = 0;
-	AGV_status.updata_waitting_status = 0;
+	if(!AGV_status.avoid_obj_warnning_cnt)
+	{
+		AGV_status.runing_status = 0;
+		AGV_status.rotating_status = 0;
+		AGV_status.updata_waitting_status = 0;
+	}
 }
 
 void AGV_rotate(void)
@@ -97,7 +100,8 @@ void AGV_run_control(float len_offset, float degree_offset,float len_dest)
 			AGV_status.updata_waitting_status = LEN_UPDATA_WRITING;
 		}
 
-		if(AGV_status.updata_waitting_status == LEN_UPDATA_WRITING)
+		if(AGV_status.updata_waitting_status == LEN_UPDATA_WRITING  ||  \
+						(AGV_status.avoid_obj_warnning_cnt /*&& PALLET_UP == AGV_status.pallet_status*/))
 		{
 			if(AGV_status.V_Set > ACON_RUN_SPEED_INIT)
 			{
@@ -113,7 +117,16 @@ void AGV_run_control(float len_offset, float degree_offset,float len_dest)
 				AGV_status.V_Set = ACON_RUN_SPEED;
 			}
 		}
+		__disable_irq();
+		if(AGV_status.avoid_obj_warnning_cnt && \
+			(/*PALLET_DOWN == AGV_status.pallet_status ||*/AGV_status.V_Set >  ACON_RUN_SPEED_INIT))
+		{
 			
+			AGV_stop();	
+		__enable_irq();
+			return;
+		}
+		__enable_irq();
 		PID_data_V.err_now = AGV_status.V_Set - (AGV_status.V_left + AGV_status.V_right) / 2.0;
 		PID_data_run.err_now = -(degree_offset + 180 * len_offset / ACON_LEN_QR / PI) / 10.0;
 		
@@ -316,7 +329,7 @@ void AGV_control(void)
 		
 	}
 	__disable_irq();
-	AGV_status.control_req--;
+	AGV_status.control_req_status--;
 	__enable_irq();
 }
 

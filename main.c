@@ -13,8 +13,6 @@ int main(void)
 
 	u8 ResetTest,Reset_Flag = 0x55;
 
-
-
 	__disable_irq();
 	boardinit();
 	PID_run_data_init();
@@ -24,8 +22,6 @@ int main(void)
 	Encode_kalman_init();
 	Degree_kalman_init();
 
-	
-
 	sFLASH_ReadBuffer(&ResetTest,ResetTest_ADDR,1);
 
 	if(ResetTest!=0x55)
@@ -33,7 +29,7 @@ int main(void)
 		sFLASH_Reset();
 		sFLASH_WriteBuffer(&Reset_Flag,ResetTest_ADDR,1);
 	}
-	__enable_irq();
+ 
 	#ifdef  DEBUG
 	AGV_status.runbutton_status = 1;
 	#endif
@@ -65,7 +61,7 @@ int main(void)
 						camera_process();
 						Gyro_process();
 
-						if(AGV_status.control_req > 0)
+						if(AGV_status.control_req_status > 0)
 						{
 							 AGV_control();
 							 //status_printf(&AGV_status);	

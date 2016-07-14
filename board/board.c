@@ -195,33 +195,33 @@ static void GPIO_Configuration(void)
 	/*
 	#define MCUKEY1				GPIO_Pin_0 			//PA
 	#define MCUKEY2				GPIO_Pin_1			//PA
-	#define MENCODER_CJ1		GPIO_Pin_8		//PC
-	#define MENCODER_CJ2		GPIO_Pin_10		//PA
-	#define MENCODER_CJ3		GPIO_Pin_14		//PD
+	#define MENCODER_CJ1		GPIO_Pin_8		//PC   //失能
+	#define MENCODER_CJ2		GPIO_Pin_10		//PA  //失能
+	#define MENCODER_CJ3		GPIO_Pin_14		//PD  //失能
 	#define MCUDI0			GPIO_Pin_11			//PD
-	#define MCUDI1			GPIO_Pin_10			//PD 	//失能
+	#define MCUDI1			GPIO_Pin_10			//PD 	
 	#define MCUDI2			GPIO_Pin_9			//PD
-	#define MCUDI3			GPIO_Pin_8			//PD	//失能
+	#define MCUDI3			GPIO_Pin_8			//PD	
 	#define MCUDI4			GPIO_Pin_15			//PE
-	#define MCUDI5			GPIO_Pin_14			//PE	//失能
+	#define MCUDI5			GPIO_Pin_14			//PE	
 	#define MCUDI6			GPIO_Pin_13			//PE
 	#define MCUDI7			GPIO_Pin_12			//PE
 	*/
 	GPIO_EXTILineConfig(GPIO_PortSourceGPIOA,GPIO_PinSource0);
 	GPIO_EXTILineConfig(GPIO_PortSourceGPIOA,GPIO_PinSource1);
-	GPIO_EXTILineConfig(GPIO_PortSourceGPIOA,GPIO_PinSource10);
+
+	//GPIO_EXTILineConfig(GPIO_PortSourceGPIOA,GPIO_PinSource10);
+	//GPIO_EXTILineConfig(GPIO_PortSourceGPIOC,GPIO_PinSource8);
+	//GPIO_EXTILineConfig(GPIO_PortSourceGPIOD,GPIO_PinSource14);
 	
-	GPIO_EXTILineConfig(GPIO_PortSourceGPIOC,GPIO_PinSource8);
-	
-	GPIO_EXTILineConfig(GPIO_PortSourceGPIOD,GPIO_PinSource14);
-	//GPIO_EXTILineConfig(GPIO_PortSourceGPIOD,GPIO_PinSource8);
+	GPIO_EXTILineConfig(GPIO_PortSourceGPIOD,GPIO_PinSource8);
 	GPIO_EXTILineConfig(GPIO_PortSourceGPIOD,GPIO_PinSource9);
-//	GPIO_EXTILineConfig(GPIO_PortSourceGPIOD,GPIO_PinSource10);
+	GPIO_EXTILineConfig(GPIO_PortSourceGPIOD,GPIO_PinSource10);
 	GPIO_EXTILineConfig(GPIO_PortSourceGPIOD,GPIO_PinSource11);
 	
 	GPIO_EXTILineConfig(GPIO_PortSourceGPIOE,GPIO_PinSource12);
 	GPIO_EXTILineConfig(GPIO_PortSourceGPIOE,GPIO_PinSource13);
-	//GPIO_EXTILineConfig(GPIO_PortSourceGPIOE,GPIO_PinSource14);
+	GPIO_EXTILineConfig(GPIO_PortSourceGPIOE,GPIO_PinSource14);
 	GPIO_EXTILineConfig(GPIO_PortSourceGPIOE,GPIO_PinSource15);
 	
 }
@@ -333,49 +333,19 @@ static void Interrupt_Configuration(void)
 	EXTI_InitStruct.EXTI_Trigger =  EXTI_Trigger_Rising;
 	EXTI_InitStruct.EXTI_LineCmd = ENABLE;
 	EXTI_Init(&EXTI_InitStruct);
-	
-#if 0	
-	
-	EXTI_InitStruct.EXTI_Line = EXTI_Line0;
+
+	EXTI_InitStruct.EXTI_Line = AVOID_OBJ_LEFT_IRQ_LINE;
+	EXTI_InitStruct.EXTI_Mode = EXTI_Mode_Interrupt;
+	EXTI_InitStruct.EXTI_Trigger =  CON_AVOID_OBJ_LEFT_IRQTRIGGER_MODE;
 	EXTI_InitStruct.EXTI_LineCmd = ENABLE;
 	EXTI_Init(&EXTI_InitStruct);
 	
-	EXTI_InitStruct.EXTI_Line = EXTI_Line1;
+	EXTI_InitStruct.EXTI_Line = AVOID_OBJ_RIGHT_IRQ_LINE;
+	EXTI_InitStruct.EXTI_Mode = EXTI_Mode_Interrupt;
+	EXTI_InitStruct.EXTI_Trigger =  CON_AVOID_OBJ_RIGHT_IRQTRIGGER_MODE;
 	EXTI_InitStruct.EXTI_LineCmd = ENABLE;
 	EXTI_Init(&EXTI_InitStruct);
 	
-	EXTI_InitStruct.EXTI_Line = EXTI_Line8;
-	EXTI_InitStruct.EXTI_LineCmd = ENABLE;
-	EXTI_Init(&EXTI_InitStruct);
-	
-	EXTI_InitStruct.EXTI_Line = EXTI_Line9;
-	EXTI_InitStruct.EXTI_LineCmd = ENABLE;
-	EXTI_Init(&EXTI_InitStruct);
-	
-	EXTI_InitStruct.EXTI_Line = EXTI_Line10;
-	EXTI_InitStruct.EXTI_LineCmd = ENABLE;
-	EXTI_Init(&EXTI_InitStruct);
-	
-	EXTI_InitStruct.EXTI_Line = EXTI_Line11;
-	EXTI_InitStruct.EXTI_LineCmd = ENABLE;
-	EXTI_Init(&EXTI_InitStruct);
-	
-	EXTI_InitStruct.EXTI_Line = EXTI_Line12;
-	EXTI_InitStruct.EXTI_LineCmd = ENABLE;
-	EXTI_Init(&EXTI_InitStruct);
-	
-	EXTI_InitStruct.EXTI_Line = EXTI_Line13;
-	EXTI_InitStruct.EXTI_LineCmd = ENABLE;
-	EXTI_Init(&EXTI_InitStruct);
-	
-	EXTI_InitStruct.EXTI_Line = EXTI_Line14;
-	EXTI_InitStruct.EXTI_LineCmd = ENABLE;
-	EXTI_Init(&EXTI_InitStruct);
-	
-	EXTI_InitStruct.EXTI_Line = EXTI_Line15;
-	EXTI_InitStruct.EXTI_LineCmd = ENABLE;
-	EXTI_Init(&EXTI_InitStruct);
-#endif
 
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_4);
 	
@@ -391,26 +361,13 @@ static void Interrupt_Configuration(void)
   NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
   NVIC_Init(&NVIC_InitStructure);
 	
+	NVIC_InitStructure.NVIC_IRQChannel = EXTI15_10_IRQn ;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = EXIT_IRQ15_10_PRIORITY;
+  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+  NVIC_Init(&NVIC_InitStructure);
+	
 
-#if 0
-	NVIC_InitStructure.NVIC_IRQChannel = USART1_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
-  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-  NVIC_Init(&NVIC_InitStructure);
-	
-	NVIC_InitStructure.NVIC_IRQChannel = USART2_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
-  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-  NVIC_Init(&NVIC_InitStructure);
-	
-	NVIC_InitStructure.NVIC_IRQChannel = USART3_IRQn;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 2;
-  NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
-  NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-  NVIC_Init(&NVIC_InitStructure);
-#endif
 	
 }
 

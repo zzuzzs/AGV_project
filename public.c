@@ -8,7 +8,7 @@
 #include "motor.h"
 
 
-AGV_status_t AGV_status = {0};
+volatile AGV_status_t AGV_status = {0};
 AGV_control_t AGV_control_data_1 = {0};
 AGV_control_t AGV_control_data_2 = {0};
 AGV_control_t AGV_control_data_3 = {0};

@@ -3,6 +3,7 @@
 #include "agv.h"
 
 static float run_speed_voltage_control = 0;
+static float run_degree_voltage_control = 0;
 
 void AGV_V_set(float speed)
 {
@@ -35,7 +36,11 @@ void AGV_stop(void)
 		AGV_status.runing_status = 0;
 		AGV_status.rotating_status = 0;
 		AGV_status.updata_waitting_status = 0;
+	}else
+	{
+		AGV_status.accident_stop_flag = 1;
 	}
+	
 }
 
 void AGV_rotate(void)
@@ -119,7 +124,7 @@ void AGV_run_control(float len_offset, float degree_offset,float len_dest)
 		}
 		__disable_irq();
 		if(AGV_status.avoid_obj_warnning_cnt && \
-			(/*PALLET_DOWN == AGV_status.pallet_status ||*/AGV_status.V_Set >  ACON_RUN_SPEED_INIT))
+			(/*PALLET_DOWN == AGV_status.pallet_status ||*/AGV_status.V_Set <=  ACON_RUN_SPEED_INIT))
 		{
 			
 			AGV_stop();	
@@ -127,26 +132,36 @@ void AGV_run_control(float len_offset, float degree_offset,float len_dest)
 			return;
 		}
 		__enable_irq();
+		
 		PID_data_V.err_now = AGV_status.V_Set - (AGV_status.V_left + AGV_status.V_right) / 2.0;
-		PID_data_run.err_now = -(degree_offset + 180 * len_offset / ACON_LEN_QR / PI) / 10.0;
+		PID_data_run.err_now = -(degree_offset + 180 * len_offset / ACON_LEN_QR / PI);
 		
 		alignment1 = PID_process(&PID_data_V);
 		alignment2 = PID_process(&PID_data_run);
 		
 		run_speed_voltage_control += alignment1;
-		
+		run_degree_voltage_control += alignment2;
+		/*
 		if(run_speed_voltage_control > 4.5)
 			run_speed_voltage_control  = 4.5;
 		else if(run_speed_voltage_control < 0)
 			run_speed_voltage_control = 0;
-				
-		motor_voltage_set(LEFT_MOTOR,run_speed_voltage_control + alignment2);
-		motor_voltage_set(RIGHT_MOTOR,run_speed_voltage_control - alignment2);
+			*/	
+		motor_voltage_set(LEFT_MOTOR,run_speed_voltage_control + run_degree_voltage_control);
+		motor_voltage_set(RIGHT_MOTOR,run_speed_voltage_control - run_degree_voltage_control);
 		
+		if(AGV_status.accident_stop_flag)
+		{
+			AGV_status.accident_stop_flag = 0;
+			run_speed_voltage_control = 0;
+			run_degree_voltage_control = 0;
+			AGV_run();
+		}
 		if(len_dest <  ACON_DEST_LEN_OFFSET)// && len_dest > -ACON_DEST_LEN_OFFSET)
 		{
 			AGV_stop();
 		}
+		
 }
 
 void AGV_rotating_control(void)
@@ -329,7 +344,7 @@ void AGV_control(void)
 		
 	}
 	__disable_irq();
-	AGV_status.control_req_status--;
+	AGV_status.control_req_cnt--;
 	__enable_irq();
 }
 

@@ -61,7 +61,7 @@ int main(void)
 						camera_process();
 						Gyro_process();
 
-						if(AGV_status.control_req_status > 0)
+						if(AGV_status.control_req_cnt > 0)
 						{
 							 AGV_control();
 							 //status_printf(&AGV_status);	

@@ -35,7 +35,6 @@ typedef struct {
 	u8 init_Directon_flag;      //标识小车姿态初始化是否调整完成
 	u8 control_st_flag;    //标识是否开始对小车进行控制
 
-	
 	u8 rotating_status;				//标识是否处于回转状态
 	u8 runing_status;				//标识是否处于直行状态
 	enum{
@@ -44,9 +43,9 @@ typedef struct {
 	}		pallet_status;      //标识托盘状态
 	u8 updata_waitting_status; //标识前台程序是否等待后台程序（中断）更新小车状态数据
 	
-	u8 control_req_status;
+	u8 control_req_cnt;
 	u8 avoid_obj_warnning_cnt;  //避障警告计数
- 
+	u8 accident_stop_flag;     //避障意外停车标志
 	
 	u16 runing_towards;    //小车设定航向,即与X轴正向顺时针夹角 0,90,180,270.地面坐标系
 	u16 encode_left_cnt;

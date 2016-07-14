@@ -200,7 +200,7 @@ void SysTick_Handler(void)
 		if(AGV_status.control_st_flag)
 		{
 			#ifdef DEBUG
-			if(AGV_status.control_req_status)
+			if(AGV_status.control_req_cnt)
 			{
 				GPIO_SetBits(GPIOA,MCU_LED1);
 				while(1)
@@ -209,7 +209,7 @@ void SysTick_Handler(void)
 				}
 			}
 			#endif
-			AGV_status.control_req_status++;
+			AGV_status.control_req_cnt++;
 	
 		}
 

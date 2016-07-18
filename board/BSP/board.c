@@ -223,15 +223,15 @@ static void TIM_Configuration(void)
 	
 	
 	TIM_EncoderInterfaceConfig(TIM1,TIM_EncoderMode_TI1,TIM_ICPolarity_Rising,TIM_ICPolarity_Rising);
-	TIM_SetAutoreload(TIM1,CON_TIM_CONT);
+	TIM_SetAutoreload(TIM1,ACON_TIM_CONT);
 	TIM_Cmd(TIM1,ENABLE);
 	
 	TIM_EncoderInterfaceConfig(TIM3,TIM_EncoderMode_TI1,TIM_ICPolarity_Rising,TIM_ICPolarity_Rising);
-	TIM_SetAutoreload(TIM3,CON_TIM_CONT);
+	TIM_SetAutoreload(TIM3,ACON_TIM_CONT);
 	TIM_Cmd(TIM3,ENABLE);
 	
 	TIM_EncoderInterfaceConfig(TIM4,TIM_EncoderMode_TI1,TIM_ICPolarity_Rising,TIM_ICPolarity_Rising);
-	TIM_SetAutoreload(TIM4,CON_TIM_CONT);
+	TIM_SetAutoreload(TIM4,ACON_TIM_CONT);
 	TIM_Cmd(TIM4,ENABLE);
 	
 }

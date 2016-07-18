@@ -1,24 +1,23 @@
-#include "gyro.h"
+#include "public.h"
+#include "Gyro.h"
+#include "string.h"
 
-gyro_data_t gyrodata = {0};
-u8  GYRO_RX_BUF[GYRO_BUF_LEN] = {0};
 int Gyro_rx_sta = 0;
+u8  GYRO_RX_BUF[GYRO_BUF_LEN] = {0};
+Gyro_info_t  Gyroinfo = {0};
+kalman_data_t Gyro_kalman_data = {0};
+Gyro_data_t Gyrodata = {0};
 
 static char err = 0;
-static char zero_flag = 0;
 
-static char tmp[GYRO_PAKLEN] = {0};
+static char Gyro_pag[GYRO_PAKLEN] = {0};
 static char index = 0;
-static char data_no = 0;
 static char FA_flag = 0;
 static char data_st_flag = 0;
 
 static int index_f = 0;
 static int index_f_flag = 0;
 
-static gyro_data_t gyrodata_zero = {0};
-static gyro_data_t gyrodatatmp[20];
-static gyro_info_t  gyroinfo = {0};
 
 static float chartofloat(char *data)
 {
@@ -30,7 +29,7 @@ static float chartofloat(char *data)
 	return *((float *)tmp);
 }
 
-static char data_analysis(char *data,gyro_data_t * gyrodata_p)
+static char data_analysis(char *data,Gyro_data_t * Gyrodata_p)
 {
 	
 	//jiaoyan
@@ -49,34 +48,21 @@ static char data_analysis(char *data,gyro_data_t * gyrodata_p)
 	}
 	
 	
-	gyrodata_p->RollRate = chartofloat(data + 17);
-	gyrodata_p->PitchRate = chartofloat(data + 17 + 4);
-	gyrodata_p->YawRate = chartofloat(data + 17 + 8);
+//	Gyrodata_p->RollRate = chartofloat(data + 20);
+	//Gyrodata_p->PitchRate = chartofloat(data + 20 + 4);
+	Gyrodata_p->YawRate = chartofloat(data + 20 + 8);
 
-	gyrodata_p->Xacc = chartofloat(data + 5);
-	gyrodata_p->Yacc = chartofloat(data + 5 + 4);
-	gyrodata_p->Zacc = chartofloat(data + 5 + 8);
-	
-	if(zero_flag)
-	{
-		gyrodata_p->RollRate -= gyrodata_zero.RollRate;
-		gyrodata_p->PitchRate -= gyrodata_zero.PitchRate;
-		gyrodata_p->YawRate -= gyrodata_zero.YawRate;
-
-		gyrodata_p->Xacc -= gyrodata_zero.Xacc;
-		gyrodata_p->Yacc -= gyrodata_zero.Yacc;
-		gyrodata_p->Zacc -= gyrodata_zero.Zacc;
-		
-	}
+//	Gyrodata_p->Xacc = chartofloat(data + 5);
+//	Gyrodata_p->Yacc = chartofloat(data + 5 + 4);
+//	Gyrodata_p->Zacc = chartofloat(data + 5 + 8);
 	
 	return 0;
 	 
 }
 
-void Gyro_data_tan(u8 * data, u8 st, u8 len)
+static void Gyro_data_tan(u8 * data, u8 st, u8 len)
 {
 	int i,i2;
-	
 
 	for(i = st; i < len + st; i++)
 	{
@@ -86,60 +72,14 @@ void Gyro_data_tan(u8 * data, u8 st, u8 len)
 				i2 -= GYRO_BUF_LEN;
 		if(data_st_flag)
 		{
-			tmp[index] = *(data + i2);
+			Gyro_pag[index] = *(data + i2);
 			index++;
 			if(index > GYRO_PAKLEN - 1)
 			{
 				data_st_flag = 0;
-				
-			
-				if( 0 == zero_flag)
-				{
-					if(!data_analysis(tmp,gyrodatatmp + data_no))
-							data_no++;
-					if(data_no > 19)
-					{
-						
-						int m;
-						for(m = 0; m < 20;m++) 
-						{
-							gyrodata_zero.Xacc += gyrodatatmp[m].Xacc;
-							gyrodata_zero.Yacc += gyrodatatmp[m].Yacc;
-							gyrodata_zero.Zacc += gyrodatatmp[m].Zacc;
-							gyrodata_zero.PitchRate += gyrodatatmp[m].PitchRate;
-							gyrodata_zero.RollRate += gyrodatatmp[m].RollRate;
-							gyrodata_zero.YawRate += gyrodatatmp[m].YawRate;
-						}
-
-						gyrodata_zero.Xacc /= 20;
-						gyrodata_zero.Yacc /= 20;
-						gyrodata_zero.Zacc /= 20;
-						gyrodata_zero.PitchRate /= 20;
-						gyrodata_zero.RollRate /= 20;
-						gyrodata_zero.YawRate /= 20;
-						
-						zero_flag = 1;
-					}
-
-				}
-				else
-				{
-					data_analysis(tmp,&gyrodata);
-					
-					gyroinfo.Xv += gyrodata.Xacc * T;
-					gyroinfo.Yv += gyrodata.Yacc * T;
-					gyroinfo.Zv += gyrodata.Zacc * T;
-					
-					gyroinfo.Xl += gyroinfo.Xv * T + 0.5 * gyrodata.Xacc * T * T;
-					gyroinfo.Yl += gyroinfo.Yv * T + 0.5 * gyrodata.Yacc * T * T;
-					gyroinfo.Zl += gyroinfo.Zv * T + 0.5 * gyrodata.Zacc * T * T;
-					
-					gyroinfo.roll += gyrodata.RollRate * T * 180 / PI;
-					gyroinfo.pitch += gyrodata.PitchRate * T * 180 / PI;
-					gyroinfo.yaw += gyrodata.YawRate * T * 180 / PI;
-				}
- 
+				data_analysis(Gyro_pag,&Gyrodata);
 				index = 0;
+				
 			}
 		}
 		else{
@@ -164,7 +104,7 @@ void Gyro_data_tan(u8 * data, u8 st, u8 len)
 }
 
 
-void gyro_process(void)
+void Gyro_process(void)
 {
 	int len = 0;
 	len = ( Gyro_rx_sta + GYRO_BUF_LEN - index_f)  % GYRO_BUF_LEN;  //  Gyro_rx_sta : 当前存放字符的位置
@@ -183,4 +123,15 @@ void gyro_process(void)
 }
 
 
+void Gyro_kalman_init(void)
+{
+	Gyro_kalman_data.data_type = GYRO_DATA;
+	Gyro_kalman_data.P = 0.001;
+	Gyro_kalman_data.H.Gyro_Weight = 1;
+	Gyro_kalman_data.Q = GMNSTD * GMNSTD;
+	Gyro_kalman_data.R.R_Gyro = GMNSTD * GMNSTD;
+	Gyro_kalman_data.X = &Gyrodata.YawRate_kalman;
+	Gyro_kalman_data.EG.Gyro_measure = &Gyrodata.YawRate;
+	
+}
 

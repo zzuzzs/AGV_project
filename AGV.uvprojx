@@ -14,7 +14,7 @@
         <TargetCommonOption>
           <Device>STM32F103VG</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32F1xx_DFP.2.0.0</PackID>
+          <PackID>Keil.STM32F1xx_DFP.2.1.0</PackID>
           <PackURL>http://www.keil.com/pack/</PackURL>
           <Cpu>IROM(0x08000000,0x100000) IRAM(0x20000000,0x18000) CPUTYPE("Cortex-M3") CLOCK(12000000) ELITTLE</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
@@ -483,14 +483,14 @@
               <FilePath>.\board\BSP\motor.h</FilePath>
             </File>
             <File>
-              <FileName>tuoluoyi.c</FileName>
+              <FileName>gyro.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\board\BSP\tuoluoyi.c</FilePath>
+              <FilePath>.\board\BSP\gyro.c</FilePath>
             </File>
             <File>
-              <FileName>tuoluoyi.h</FileName>
+              <FileName>gyro.h</FileName>
               <FileType>5</FileType>
-              <FilePath>.\board\BSP\tuoluoyi.h</FilePath>
+              <FilePath>.\board\BSP\gyro.h</FilePath>
             </File>
           </Files>
         </Group>

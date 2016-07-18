@@ -23,7 +23,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f10x_it.h" 
-#include "tuoluoyi.h" 
+#include "gyro.h" 
 #include "camera.h"
 
  
@@ -81,11 +81,11 @@ void DebugMon_Handler(void)
 /*  available peripheral interrupt handler's name please refer to the startup */
 /*  file (startup_stm32f10x_xx.s).                                            */
 /******************************************************************************/
-#ifdef CON_TUOLUOYI_USART1
-#define USART1_RX_BUF		TUOLUOYI_RX_BUF
-#define USART1_BUF_LEN  TUOLUOYI_BUF_LEN
-#define USART1_INDEX		Tuoluoyi_rx_sta
-#endif /*CON_TUOLUOYI_USART1*/
+#ifdef CON_GYRO_USART1
+#define USART1_RX_BUF		GYRO_RX_BUF
+#define USART1_BUF_LEN  GYRO_BUF_LEN
+#define USART1_INDEX		Gyro_rx_sta
+#endif /*CON_GYRO_USART1*/
 
 #ifdef CON_CAMERA_USART1
 #define USART1_RX_BUF		CAMERA_RX_BUF
@@ -112,11 +112,11 @@ void USART1_IRQHandler(void)
 	
 }
 
-#ifdef CON_TUOLUOYI_USART1
-#define USART2_RX_BUF		TUOLUOYI_RX_BUF
-#define USART2_BUF_LEN  TUOLUOYI_BUF_LEN
-#define USART2_INDEX		Tuoluoyi_rx_sta
-#endif /*CON_TUOLUOYI_USART1*/
+#ifdef CON_GYRO_USART1
+#define USART2_RX_BUF		GYRO_RX_BUF
+#define USART2_BUF_LEN  GYRO_BUF_LEN
+#define USART2_INDEX		Gyro_rx_sta
+#endif /*CON_GYRO_USART1*/
 
 #ifdef CON_CAMERA_USART1
 #define USART2_RX_BUF		CAMERA_RX_BUF

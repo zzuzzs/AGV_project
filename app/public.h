@@ -7,7 +7,7 @@
 
 #define  PI 3.1415926
 
-typedef struct tuoluoyi_data{
+typedef struct gyro_data{
 	
 	float Xacc;
 	float Yacc;
@@ -15,7 +15,7 @@ typedef struct tuoluoyi_data{
 	float RollRate;
 	float PitchRate;
 	float YawRate;
-} tuoluoyi_data_t;
+} gyro_data_t;
 
 typedef struct {
 	float Xv;
@@ -27,7 +27,7 @@ typedef struct {
 	float roll;
 	float pitch;
 	float yaw;
-} tuoluoyi_info_t;
+} gyro_info_t;
 
 
 typedef struct  {
